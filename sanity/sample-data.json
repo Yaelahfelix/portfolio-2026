@@ -1,0 +1,125 @@
+{
+  "skills": [
+    {
+      "_type": "skill",
+      "_id": "skill-react",
+      "name": "React",
+      "category": "Frontend",
+      "proficiency": 95,
+      "icon": "⚛️"
+    },
+    {
+      "_type": "skill",
+      "_id": "skill-nextjs",
+      "name": "Next.js",
+      "category": "Frontend",
+      "proficiency": 90,
+      "icon": "▲"
+    },
+    {
+      "_type": "skill",
+      "_id": "skill-typescript",
+      "name": "TypeScript",
+      "category": "Languages",
+      "proficiency": 88,
+      "icon": "📘"
+    },
+    {
+      "_type": "skill",
+      "_id": "skill-nodejs",
+      "name": "Node.js",
+      "category": "Backend",
+      "proficiency": 85,
+      "icon": "🟢"
+    },
+    {
+      "_type": "skill",
+      "_id": "skill-postgresql",
+      "name": "PostgreSQL",
+      "category": "Databases",
+      "proficiency": 82,
+      "icon": "🐘"
+    },
+    {
+      "_type": "skill",
+      "_id": "skill-tailwind",
+      "name": "Tailwind CSS",
+      "category": "Frontend",
+      "proficiency": 92,
+      "icon": "🎨"
+    }
+  ],
+  "workExperience": [
+    {
+      "_type": "workExperience",
+      "_id": "work-1",
+      "company": "Tech Company",
+      "position": "Senior Full-Stack Developer",
+      "startDate": "2022-01-01",
+      "endDate": "2024-12-31",
+      "isCurrentlyWorking": false,
+      "description": "Led development of multiple full-stack applications using React and Node.js. Implemented responsive designs and optimized performance.",
+      "achievements": [
+        "Increased application performance by 40%",
+        "Led team of 3 junior developers",
+        "Implemented CI/CD pipeline"
+      ]
+    },
+    {
+      "_type": "workExperience",
+      "_id": "work-2",
+      "company": "Startup Inc",
+      "position": "Full-Stack Developer",
+      "startDate": "2020-06-01",
+      "endDate": "2021-12-31",
+      "isCurrentlyWorking": false,
+      "description": "Built and maintained multiple web applications. Worked with cross-functional teams to deliver features on time.",
+      "achievements": [
+        "Shipped 10+ features",
+        "Improved database queries by 30%",
+        "Mentored interns"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "_type": "project",
+      "_id": "project-1",
+      "title": "E-Commerce Platform",
+      "description": "A full-featured e-commerce platform built with React and Node.js",
+      "longDescription": "Built a comprehensive e-commerce platform with user authentication, product catalog, shopping cart, and payment integration using Stripe.",
+      "image": "https://via.placeholder.com/500x300?text=E-Commerce+Platform",
+      "technologies": ["React", "Next.js", "Node.js", "PostgreSQL", "Stripe"],
+      "liveLink": "https://ecommerce-demo.com",
+      "githubLink": "https://github.com/yourname/ecommerce",
+      "featured": true,
+      "order": 1
+    },
+    {
+      "_type": "project",
+      "_id": "project-2",
+      "title": "Task Management App",
+      "description": "Collaborative task management application with real-time updates",
+      "longDescription": "Created a real-time task management app with WebSocket integration, allowing teams to collaborate seamlessly on projects.",
+      "image": "https://via.placeholder.com/500x300?text=Task+Management",
+      "technologies": ["React", "Socket.io", "Express", "MongoDB"],
+      "liveLink": "https://taskapp-demo.com",
+      "githubLink": "https://github.com/yourname/taskapp",
+      "featured": true,
+      "order": 2
+    },
+    {
+      "_type": "project",
+      "_id": "project-3",
+      "title": "AI Chat Application",
+      "description": "Chat application powered by AI language models",
+      "longDescription": "Developed an intelligent chat application using OpenAI API, featuring conversation history, context awareness, and custom prompts.",
+      "image": "https://via.placeholder.com/500x300?text=AI+Chat",
+      "technologies": ["React", "Next.js", "OpenAI API", "Tailwind CSS"],
+      "liveLink": "https://aichat-demo.com",
+      "githubLink": "https://github.com/yourname/aichat",
+      "featured": true,
+      "order": 3
+    }
+  ]
+}
