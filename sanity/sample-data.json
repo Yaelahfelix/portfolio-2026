@@ -121,5 +121,100 @@
       "featured": true,
       "order": 3
     }
+  ],
+  "education": [
+    {
+      "_type": "education",
+      "_id": "edu-bachelor",
+      "school": "State University",
+      "degree": "Bachelor of Science",
+      "field": "Computer Science",
+      "startDate": "2018-09-01",
+      "endDate": "2022-06-01",
+      "gpa": "3.8/4.0",
+      "description": "Focused on software development, data structures, and web technologies. Completed internships at tech companies.",
+      "order": 1
+    },
+    {
+      "_type": "education",
+      "_id": "edu-masters",
+      "school": "Tech Institute",
+      "degree": "Master of Technology",
+      "field": "Full-Stack Development",
+      "startDate": "2022-09-01",
+      "gpa": "3.9/4.0",
+      "description": "Advanced coursework in modern web frameworks, cloud architecture, and DevOps practices.",
+      "order": 2
+    }
+  ],
+  "achievements": [
+    {
+      "_type": "achievement",
+      "_id": "achieve-aws",
+      "title": "AWS Certified Solutions Architect",
+      "category": "certification",
+      "issuer": "Amazon Web Services",
+      "date": "2023-06-15",
+      "description": "Professional level certification in cloud architecture and design on AWS platform.",
+      "icon": "☁️",
+      "featured": true,
+      "order": 1
+    },
+    {
+      "_type": "achievement",
+      "_id": "achieve-hackathon",
+      "title": "First Place - Tech Hackathon 2023",
+      "category": "award",
+      "issuer": "Tech Community",
+      "date": "2023-04-20",
+      "description": "Won first place in a 48-hour hackathon with innovative full-stack solution.",
+      "icon": "🏆",
+      "featured": true,
+      "order": 2
+    },
+    {
+      "_type": "achievement",
+      "_id": "achieve-article",
+      "title": "Published Article: Modern React Patterns",
+      "category": "publication",
+      "issuer": "Tech Blog",
+      "date": "2023-03-10",
+      "description": "In-depth article about advanced React patterns and best practices.",
+      "icon": "📝",
+      "order": 3
+    },
+    {
+      "_type": "achievement",
+      "_id": "achieve-speaking",
+      "title": "Keynote Speaker - Web Dev Conference",
+      "category": "speaking",
+      "issuer": "Web Dev Conference 2023",
+      "date": "2023-05-18",
+      "description": "Delivered keynote on scaling web applications with modern technologies.",
+      "icon": "🎤",
+      "order": 4
+    },
+    {
+      "_type": "achievement",
+      "_id": "achieve-nodejs",
+      "title": "Node.js Certified Developer",
+      "category": "certification",
+      "issuer": "Node.js Foundation",
+      "date": "2023-02-14",
+      "description": "Professional certification in Node.js development and best practices.",
+      "icon": "🟢",
+      "order": 5
+    },
+    {
+      "_type": "achievement",
+      "_id": "achieve-github",
+      "title": "GitHub Arctic Code Vault Contributor",
+      "category": "recognition",
+      "issuer": "GitHub",
+      "date": "2023-01-01",
+      "description": "Recognized as contributor to open-source projects archived in the Arctic Code Vault.",
+      "icon": "🗂️",
+      "order": 6
+    }
   ]
 }

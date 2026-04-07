@@ -51,3 +51,36 @@ export async function getProjects() {
   `)
   return projects
 }
+
+export async function getEducation() {
+  const education = await client.fetch(`
+    *[_type == "education"] | order(order asc) {
+      _id,
+      school,
+      degree,
+      field,
+      startDate,
+      endDate,
+      description,
+      gpa,
+    }
+  `)
+  return education
+}
+
+export async function getAchievements() {
+  const achievements = await client.fetch(`
+    *[_type == "achievement"] | order(order asc) {
+      _id,
+      title,
+      category,
+      issuer,
+      date,
+      description,
+      icon,
+      link,
+      featured,
+    }
+  `)
+  return achievements
+}

@@ -20,7 +20,9 @@ export function Navbar() {
   const navItems = [
     { name: 'Skills', href: '#skills' },
     { name: 'Experience', href: '#experience' },
+    { name: 'Education', href: '#education' },
     { name: 'Projects', href: '#projects' },
+    { name: 'Achievements', href: '#achievements' },
   ]
 
   return (

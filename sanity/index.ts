@@ -4,5 +4,7 @@
 import skill from './schemas/skill'
 import workExperience from './schemas/workExperience'
 import project from './schemas/project'
+import education from './schemas/education'
+import achievement from './schemas/achievement'
 
-export const schemaTypes = [skill, workExperience, project]
+export const schemaTypes = [skill, workExperience, project, education, achievement]

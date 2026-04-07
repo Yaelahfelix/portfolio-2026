@@ -3,6 +3,8 @@ export { HeroSection } from './sections/HeroSection'
 export { SkillsSection } from './sections/SkillsSection'
 export { WorkExperienceSection } from './sections/WorkExperienceSection'
 export { ProjectsSection } from './sections/ProjectsSection'
+export { default as EducationSection } from './sections/EducationSection'
+export { default as AchievementSection } from './sections/AchievementSection'
 
 // Layout
 export { Navbar } from './Navbar'
