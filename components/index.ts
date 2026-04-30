@@ -10,6 +10,10 @@ export { default as AchievementSection } from './sections/AchievementSection'
 export { Navbar } from './Navbar'
 export { Footer } from './Footer'
 
-// 3D Components
-export { FloatingParticles } from './3d/FloatingParticles'
-export { RotatingCube } from './3d/RotatingCube'
+// Interactive Components
+export { GlowCursor } from './interactive/GlowCursor'
+export { MagneticButton } from './interactive/MagneticButton'
+export { ParallaxText } from './interactive/ParallaxText'
+export { TextReveal } from './interactive/TextReveal'
+export { TiltCard } from './interactive/TiltCard'
+export { SectionTransition } from './interactive/SectionTransition'

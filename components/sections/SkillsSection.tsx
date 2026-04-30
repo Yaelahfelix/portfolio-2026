@@ -1,7 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { TextReveal } from '../interactive/TextReveal'
+import { TiltCard } from '../interactive/TiltCard'
 
 interface Skill {
   _id: string
@@ -11,122 +13,193 @@ interface Skill {
   icon?: string
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-}
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6 },
-  },
-}
-
-const skillBarVariants = {
-  hidden: { width: 0 },
-  visible: (proficiency: number) => ({
-    width: `${proficiency}%`,
-    transition: { duration: 1.5, ease: 'easeOut' },
-  }),
-}
-
 interface SkillsSectionProps {
   skills: Skill[]
 }
 
+const categoryConfig: Record<string, { label: string; color: string; glow: string }> = {
+  frontend: { label: 'Frontend', color: '#06d6a0', glow: 'rgba(6, 214, 160, 0.2)' },
+  backend: { label: 'Backend', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.2)' },
+  tools: { label: 'Tools & DevOps', color: '#7c3aed', glow: 'rgba(124, 58, 237, 0.2)' },
+  database: { label: 'Database', color: '#f97316', glow: 'rgba(249, 115, 22, 0.2)' },
+}
+
 export function SkillsSection({ skills }: SkillsSectionProps) {
-  const [inView, setInView] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [hoveredSkill, setHoveredSkill] = useState<string | null>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
   const categories = ['frontend', 'backend', 'tools', 'database']
 
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  })
+
+  const bgY = useTransform(scrollYProgress, [0, 1], [100, -100])
+
+  const filteredSkills = activeCategory
+    ? skills.filter((s) => s.category === activeCategory)
+    : skills
+
   return (
-    <section id="skills" className="py-20 bg-gray-50 dark:bg-gray-900/50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="skills" ref={sectionRef} className="section-padding relative overflow-hidden">
+      {/* Background elements */}
+      <motion.div
+        className="absolute inset-0 dot-bg"
+        style={{ y: bgY }}
+      />
+
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Section heading */}
+        <TextReveal
+          as="h2"
+          className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight"
+        >
+          Skills & Expertise
+        </TextReveal>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+          className="text-[rgba(255,255,255,0.4)] text-lg mb-12 max-w-lg"
+        >
+          Technologies I work with daily to build amazing experiences
+        </motion.p>
+
+        {/* Category filter tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex flex-wrap gap-2 mb-12"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Skills & Expertise
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            A comprehensive overview of my technical skills and proficiency levels
-          </p>
+          <button
+            onClick={() => setActiveCategory(null)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+              activeCategory === null
+                ? 'bg-white text-black'
+                : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
+            }`}
+            data-hover
+          >
+            All
+          </button>
+          {categories.map((cat) => {
+            const config = categoryConfig[cat]
+            const hasSkills = skills.some((s) => s.category === cat)
+            if (!hasSkills) return null
+
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  activeCategory === cat
+                    ? 'text-black'
+                    : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
+                }`}
+                style={activeCategory === cat ? { backgroundColor: config.color } : {}}
+                data-hover
+              >
+                {config.label}
+              </button>
+            )
+          })}
         </motion.div>
 
-        {/* Skills by category */}
+        {/* Skills grid */}
         <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          layout
         >
-          {categories.map((category) => {
-            const categorySkills = skills.filter((s) => s.category === category)
-            if (categorySkills.length === 0) return null
-
-            const categoryLabel = {
-              frontend: 'Frontend Development',
-              backend: 'Backend Development',
-              tools: 'Tools & DevOps',
-              database: 'Database & Storage',
-            }[category]
+          {filteredSkills.map((skill, index) => {
+            const config = categoryConfig[skill.category] || categoryConfig.frontend
 
             return (
               <motion.div
-                key={category}
-                variants={itemVariants}
-                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+                key={skill._id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                viewport={{ once: true }}
               >
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                  {categoryLabel}
-                </h3>
-                <div className="space-y-5">
-                  {categorySkills.map((skill) => (
-                    <motion.div
-                      key={skill._id}
-                      whileHover={{ scale: 1.02 }}
-                      className="group"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                <TiltCard tiltAmount={5} scale={1.02}>
+                  <motion.div
+                    className="glass-card glass-card-hover p-5 h-full group"
+                    onMouseEnter={() => setHoveredSkill(skill._id)}
+                    onMouseLeave={() => setHoveredSkill(null)}
+                    data-hover
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold text-base group-hover:text-white transition-colors">
                           {skill.name}
-                        </span>
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          whileInView={{ opacity: 1 }}
-                          transition={{ delay: 0.3 }}
-                          className="text-sm text-blue-600 dark:text-blue-400 font-semibold"
+                        </h3>
+                        <span
+                          className="text-xs font-medium mt-1 inline-block"
+                          style={{ color: config.color }}
                         >
-                          {skill.proficiency}%
-                        </motion.span>
+                          {config.label}
+                        </span>
                       </div>
-                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <motion.div
-                          className="h-full bg-gradient-to-r from-blue-600 to-blue-400"
-                          custom={skill.proficiency}
-                          variants={skillBarVariants}
-                          initial="hidden"
-                          whileInView="visible"
-                          viewport={{ once: true }}
-                        />
+
+                      {/* Circular progress */}
+                      <div className="relative w-12 h-12 flex-shrink-0">
+                        <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                          <circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            fill="none"
+                            stroke="rgba(255,255,255,0.06)"
+                            strokeWidth="3"
+                          />
+                          <motion.circle
+                            cx="24"
+                            cy="24"
+                            r="20"
+                            fill="none"
+                            stroke={config.color}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeDasharray={`${2 * Math.PI * 20}`}
+                            initial={{ strokeDashoffset: 2 * Math.PI * 20 }}
+                            whileInView={{
+                              strokeDashoffset: 2 * Math.PI * 20 * (1 - skill.proficiency / 100),
+                            }}
+                            transition={{ duration: 1.5, ease: 'easeOut', delay: index * 0.05 }}
+                            viewport={{ once: true }}
+                            style={{
+                              filter: hoveredSkill === skill._id
+                                ? `drop-shadow(0 0 6px ${config.glow})`
+                                : 'none',
+                            }}
+                          />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[rgba(255,255,255,0.8)]">
+                          {skill.proficiency}
+                        </span>
                       </div>
-                    </motion.div>
-                  ))}
-                </div>
+                    </div>
+
+                    {/* Proficiency bar */}
+                    <div className="h-[2px] bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: config.color }}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${skill.proficiency}%` }}
+                        transition={{ duration: 1.2, ease: 'easeOut', delay: index * 0.05 }}
+                        viewport={{ once: true }}
+                      />
+                    </div>
+                  </motion.div>
+                </TiltCard>
               </motion.div>
             )
           })}

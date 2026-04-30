@@ -7,11 +7,13 @@ import { ProjectsSection } from '@/components/sections/ProjectsSection'
 import EducationSection from '@/components/sections/EducationSection'
 import AchievementSection from '@/components/sections/AchievementSection'
 import { getSkills, getWorkExperience, getProjects } from '@/lib/sanity.queries'
+import { GlowCursor } from '@/components/interactive/GlowCursor'
+import { ParallaxText } from '@/components/interactive/ParallaxText'
+import { SectionTransition } from '@/components/interactive/SectionTransition'
 
 export const metadata = {
-  title: 'Full-Stack Developer Portfolio | Interactive & Animated',
-  description: 'Explore my portfolio showcasing full-stack development projects, skills, education, professional experience, and achievements. Built with React, Next.js, and modern web technologies.',
-  keywords: 'portfolio, developer, full-stack, react, nextjs, web development, achievements, education',
+  title: 'Yaelahfelix',
+  description: 'Interactive portfolio showcasing full-stack development projects, skills, education, and achievements. Built with passion and modern web technologies.',
 }
 
 export default async function Home() {
@@ -22,14 +24,28 @@ export default async function Home() {
   ])
 
   return (
-    <main className="bg-white dark:bg-gray-900 transition-colors">
+    <main className="bg-[#050505] min-h-screen">
+      <GlowCursor />
       <Navbar />
       <HeroSection />
+
+      <ParallaxText baseVelocity={1.5}>SKILLS & EXPERTISE</ParallaxText>
       <SkillsSection skills={skills} />
+
+      <SectionTransition />
+      <ParallaxText baseVelocity={-1.5}>WORK EXPERIENCE</ParallaxText>
       <WorkExperienceSection experiences={experiences} />
+
+      <SectionTransition />
       <EducationSection />
+
+      <ParallaxText baseVelocity={2}>FEATURED PROJECTS</ParallaxText>
       <ProjectsSection projects={projects} />
+
+      <SectionTransition />
       <AchievementSection />
+
+      <SectionTransition />
       <Footer />
     </main>
   )

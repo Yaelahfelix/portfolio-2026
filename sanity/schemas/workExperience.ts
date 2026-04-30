@@ -1,11 +1,9 @@
 import { defineType, defineField } from 'sanity'
-import { BriefcaseIcon } from '@sanity/icons'
 
-export const workExperience = defineType({
+const workExperience = defineType({
   name: 'workExperience',
   title: 'Work Experience',
   type: 'document',
-  icon: BriefcaseIcon,
   fields: [
     defineField({
       name: 'company',
@@ -68,3 +66,5 @@ export const workExperience = defineType({
     },
   },
 })
+
+export default workExperience

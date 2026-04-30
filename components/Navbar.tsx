@@ -1,136 +1,193 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { MagneticButton } from './interactive/MagneticButton'
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
+  const lastScrollY = useRef(0)
+
+  const { scrollYProgress } = useScroll()
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+      const currentY = window.scrollY
+      setScrolled(currentY > 50)
+      setHidden(currentY > lastScrollY.current && currentY > 200)
+      lastScrollY.current = currentY
+
+      // Detect active section
+      const sections = ['skills', 'experience', 'education', 'projects', 'achievements', 'contact']
+      for (const section of sections.reverse()) {
+        const el = document.getElementById(section)
+        if (el) {
+          const rect = el.getBoundingClientRect()
+          if (rect.top <= 200) {
+            setActiveSection(section)
+            break
+          }
+        }
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const navItems = [
-    { name: 'Skills', href: '#skills' },
-    { name: 'Experience', href: '#experience' },
-    { name: 'Education', href: '#education' },
-    { name: 'Projects', href: '#projects' },
-    { name: 'Achievements', href: '#achievements' },
+    { name: 'Skills', href: '#skills', id: 'skills' },
+    { name: 'Experience', href: '#experience', id: 'experience' },
+    { name: 'Education', href: '#education', id: 'education' },
+    { name: 'Projects', href: '#projects', id: 'projects' },
+    { name: 'Achievements', href: '#achievements', id: 'achievements' },
   ]
 
   return (
-    <motion.nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg'
-          : 'bg-transparent'
-      }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6 }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 sm:h-20">
-          {/* Logo */}
-          <Link href="/">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent"
-            >
-              Portfolio
-            </motion.div>
-          </Link>
+    <>
+      {/* Scroll progress bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2px] z-[60] origin-left"
+        style={{
+          scaleX: scrollYProgress,
+          background: 'linear-gradient(90deg, #06d6a0, #3b82f6, #7c3aed)',
+        }}
+      />
 
-          {/* Desktop menu */}
-          <div className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <Link key={item.name} href={item.href}>
-                <motion.div
-                  whileHover={{ color: '#2563eb' }}
-                  className="text-gray-700 dark:text-gray-300 font-medium transition-colors relative group"
-                >
-                  {item.name}
-                  <motion.div
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"
-                  />
-                </motion.div>
-              </Link>
-            ))}
-            <motion.a
-              href="#contact"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Contact
-            </motion.a>
-          </div>
-
-          {/* Mobile menu button */}
-          <motion.button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-gray-700 dark:text-white"
-            whileTap={{ scale: 0.95 }}
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={mobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-              />
-            </svg>
-          </motion.button>
-        </div>
-
-        {/* Mobile menu */}
-        <motion.div
-          className="md:hidden"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{
-            height: mobileMenuOpen ? 'auto' : 0,
-            opacity: mobileMenuOpen ? 1 : 0,
-          }}
-          transition={{ duration: 0.3 }}
-          style={{ overflow: 'hidden' }}
-        >
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <motion.div
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  whileHover={{ x: 4 }}
-                >
-                  {item.name}
-                </motion.div>
-              </Link>
-            ))}
-            <Link href="#contact" onClick={() => setMobileMenuOpen(false)}>
+      <motion.nav
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled
+            ? 'bg-[rgba(5,5,5,0.8)] backdrop-blur-xl border-b border-[rgba(255,255,255,0.05)]'
+            : 'bg-transparent'
+          }`}
+        animate={{ y: hidden ? -100 : 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            {/* Logo */}
+            <Link href="/">
               <motion.div
-                className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white"
+                whileHover={{ scale: 1.05 }}
+                className="text-xl font-bold tracking-tight"
+                data-hover
               >
-                Contact
+                <span className="gradient-text">Yaelahfelix</span>
+                <span className="text-[rgba(255,255,255,0.6)]">.</span>
+                <span className="text-white">dev</span>
               </motion.div>
             </Link>
+
+            {/* Desktop menu */}
+            <div className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => (
+                <Link key={item.name} href={item.href}>
+                  <motion.div
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors rounded-full ${activeSection === item.id
+                        ? 'text-white'
+                        : 'text-[rgba(255,255,255,0.4)] hover:text-[rgba(255,255,255,0.8)]'
+                      }`}
+                    data-hover
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {activeSection === item.id && (
+                      <motion.div
+                        layoutId="activeNav"
+                        className="absolute inset-0 bg-[rgba(255,255,255,0.08)] rounded-full border border-[rgba(255,255,255,0.08)]"
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{item.name}</span>
+                  </motion.div>
+                </Link>
+              ))}
+
+              <MagneticButton
+                as="a"
+                href="#contact"
+                className="ml-4 px-5 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-[rgba(255,255,255,0.9)] transition-colors"
+                strength={0.2}
+              >
+                Contact
+              </MagneticButton>
+            </div>
+
+            {/* Mobile menu button */}
+            <motion.button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-[rgba(255,255,255,0.8)]"
+              whileTap={{ scale: 0.9 }}
+              data-hover
+            >
+              <div className="w-6 h-5 relative flex flex-col justify-between">
+                <motion.span
+                  className="block w-full h-[1.5px] bg-current origin-left"
+                  animate={{ rotate: mobileMenuOpen ? 45 : 0, y: mobileMenuOpen ? -1 : 0 }}
+                />
+                <motion.span
+                  className="block w-full h-[1.5px] bg-current"
+                  animate={{ opacity: mobileMenuOpen ? 0 : 1, x: mobileMenuOpen ? 20 : 0 }}
+                />
+                <motion.span
+                  className="block w-full h-[1.5px] bg-current origin-left"
+                  animate={{ rotate: mobileMenuOpen ? -45 : 0, y: mobileMenuOpen ? 1 : 0 }}
+                />
+              </div>
+            </motion.button>
           </div>
-        </motion.div>
-      </div>
-    </motion.nav>
+        </div>
+
+        {/* Mobile menu - fullscreen overlay */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 top-16 bg-[rgba(5,5,5,0.95)] backdrop-blur-2xl md:hidden z-40"
+            >
+              <div className="flex flex-col items-center justify-center h-full gap-8 -mt-16">
+                {navItems.map((item, i) => (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ delay: i * 0.08, duration: 0.3 }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`text-3xl font-semibold transition-colors ${activeSection === item.id ? 'gradient-text' : 'text-[rgba(255,255,255,0.5)] hover:text-white'
+                        }`}
+                    >
+                      {item.name}
+                    </Link>
+                  </motion.div>
+                ))}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ delay: navItems.length * 0.08, duration: 0.3 }}
+                >
+                  <Link
+                    href="#contact"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-8 py-3 bg-white text-black rounded-full text-lg font-medium"
+                  >
+                    Contact
+                  </Link>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
+    </>
   )
 }

@@ -1,26 +1,32 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+})
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#000000' },
-  ],
+  themeColor: '#050505',
 }
 
 export const metadata: Metadata = {
-  title: 'Full-Stack Developer Portfolio | Interactive & Animated',
-  description: 'Explore my portfolio showcasing full-stack development projects, skills, and professional experience. Built with React, Next.js, and modern web technologies.',
-  keywords: ['portfolio', 'developer', 'full-stack', 'react', 'nextjs', 'web development'],
+  title: 'Portfolio — Creative Developer',
+  description: 'Interactive portfolio showcasing full-stack development projects, skills, and professional experience. Built with passion and modern web technologies.',
+  keywords: ['portfolio', 'developer', 'full-stack', 'react', 'nextjs', 'interactive', 'creative'],
   authors: [{ name: 'Portfolio' }],
   creator: 'Portfolio Owner',
   publisher: 'Portfolio',
@@ -32,12 +38,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
         url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
       },
       {
         url: '/icon.svg',
@@ -50,8 +51,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://myportfolio.com',
-    title: 'Full-Stack Developer Portfolio',
-    description: 'Explore my portfolio showcasing full-stack development projects',
+    title: 'Portfolio — Creative Developer',
+    description: 'Interactive portfolio with immersive animations and parallax effects',
     images: [
       {
         url: '/og-image.png',
@@ -63,15 +64,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Full-Stack Developer Portfolio',
-    description: 'Interactive & Animated Portfolio',
+    title: 'Portfolio — Creative Developer',
+    description: 'Interactive & Immersive Developer Portfolio',
     creator: '@yourhandle',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
   },
 }
 
@@ -81,8 +76,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
+    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-sans antialiased noise-overlay">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

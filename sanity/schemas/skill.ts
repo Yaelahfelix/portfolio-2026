@@ -1,7 +1,7 @@
 import { defineType, defineField } from 'sanity'
 import { TagIcon } from '@sanity/icons'
 
-export const skill = defineType({
+const skill = defineType({
   name: 'skill',
   title: 'Skill',
   type: 'document',
@@ -21,6 +21,7 @@ export const skill = defineType({
         list: [
           { title: 'Frontend', value: 'frontend' },
           { title: 'Backend', value: 'backend' },
+          { title: 'Fullstack', value: 'fullstack' },
           { title: 'Tools & DevOps', value: 'tools' },
           { title: 'Database', value: 'database' },
         ],
@@ -52,3 +53,5 @@ export const skill = defineType({
     },
   },
 })
+
+export default skill
