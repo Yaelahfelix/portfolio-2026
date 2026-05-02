@@ -1,16 +1,17 @@
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import Link from 'next/link'
 import { useRef, useState, useEffect } from 'react'
 import { MagneticButton } from '../interactive/MagneticButton'
 import { useMousePosition } from '@/hooks/useMousePosition'
-
-const roles = ['Full-Stack Developer', 'NextJS Developer', 'SQL Developer', 'Mobile Developer']
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null)
   const mouse = useMousePosition()
+  const { t } = useLanguage()
+  const roles = t.hero.roles
+
   const [currentRole, setCurrentRole] = useState(0)
   const [displayText, setDisplayText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
@@ -24,7 +25,6 @@ export function HeroSection() {
   const heroY = useTransform(scrollYProgress, [0, 0.8], [0, -100])
   const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.95])
 
-  // Typing animation
   useEffect(() => {
     const currentWord = roles[currentRole]
     const timeout = setTimeout(() => {
@@ -45,7 +45,7 @@ export function HeroSection() {
     }, isDeleting ? 40 : 80)
 
     return () => clearTimeout(timeout)
-  }, [displayText, isDeleting, currentRole])
+  }, [displayText, isDeleting, currentRole, roles])
 
   return (
     <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -61,7 +61,6 @@ export function HeroSection() {
             `,
           }}
         />
-        {/* Mouse-tracking spotlight */}
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full pointer-events-none"
           style={{
@@ -78,16 +77,8 @@ export function HeroSection() {
           <motion.div
             key={i}
             className="absolute"
-            animate={{
-              y: [0, -20, 0],
-              rotate: [0, 180, 360],
-            }}
-            transition={{
-              duration: 10 + i * 2,
-              repeat: Infinity,
-              ease: 'linear',
-              delay: i * 0.5,
-            }}
+            animate={{ y: [0, -20, 0], rotate: [0, 180, 360] }}
+            transition={{ duration: 10 + i * 2, repeat: Infinity, ease: 'linear', delay: i * 0.5 }}
             style={{
               left: `${15 + i * 15}%`,
               top: `${20 + (i % 3) * 25}%`,
@@ -95,19 +86,14 @@ export function HeroSection() {
             }}
           >
             <div
-              className={`${i % 3 === 0
-                ? 'w-2 h-2 rounded-full'
-                : i % 3 === 1
-                  ? 'w-3 h-3 rotate-45'
-                  : 'w-4 h-[1px]'
-                } ${i % 2 === 0 ? 'bg-[#06d6a0]/20' : 'bg-[#7c3aed]/20'
-                }`}
+              className={`${
+                i % 3 === 0 ? 'w-2 h-2 rounded-full' : i % 3 === 1 ? 'w-3 h-3 rotate-45' : 'w-4 h-[1px]'
+              } ${i % 2 === 0 ? 'bg-[#06d6a0]/20' : 'bg-[#7c3aed]/20'}`}
             />
           </motion.div>
         ))}
       </div>
 
-      {/* Grid background */}
       <div className="absolute inset-0 grid-bg opacity-50" />
 
       {/* Main content */}
@@ -124,7 +110,7 @@ export function HeroSection() {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)] text-sm font-medium">
             <span className="w-2 h-2 rounded-full bg-[#06d6a0] animate-pulse-glow" />
-            Available for work
+            {t.hero.badge}
           </span>
         </motion.div>
 
@@ -135,9 +121,9 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6">
-            <span className="block text-white">Dev with</span>
-            <span className="block gradient-text mt-2">4+ Years</span>
-            <span className="block text-white mt-2">experiences</span>
+            <span className="block text-white">{t.hero.heading1}</span>
+            <span className="block gradient-text mt-2">{t.hero.heading2}</span>
+            <span className="block text-white mt-2">{t.hero.heading3}</span>
           </h1>
         </motion.div>
 
@@ -169,8 +155,7 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 1 }}
           className="text-base sm:text-lg text-[rgba(255,255,255,0.5)] max-w-xl mx-auto mb-12 text-pretty leading-relaxed"
         >
-          Crafting beautiful, performant web experiences with modern technologies.
-          Specialized in React, Next.js, and full-stack development.
+          {t.hero.description}
         </motion.p>
 
         {/* CTA Buttons */}
@@ -186,7 +171,7 @@ export function HeroSection() {
             className="group px-8 py-4 bg-white text-black rounded-full font-semibold text-sm hover:bg-[rgba(255,255,255,0.9)] transition-all inline-flex items-center gap-2"
             strength={0.3}
           >
-            View My Work
+            {t.hero.viewWork}
             <motion.span
               className="inline-block"
               animate={{ x: [0, 4, 0] }}
@@ -202,7 +187,7 @@ export function HeroSection() {
             className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-full font-semibold text-sm hover:bg-[rgba(255,255,255,0.04)] hover:border-white/30 transition-all"
             strength={0.3}
           >
-            Get In Touch
+            {t.hero.getInTouch}
           </MagneticButton>
         </motion.div>
 
@@ -218,7 +203,9 @@ export function HeroSection() {
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             className="flex flex-col items-center gap-2"
           >
-            <span className="text-[10px] uppercase tracking-[0.3em] text-[rgba(255,255,255,0.3)] font-medium">Scroll</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-[rgba(255,255,255,0.3)] font-medium">
+              {t.hero.scroll}
+            </span>
             <div className="w-[1px] h-8 bg-gradient-to-b from-white/30 to-transparent" />
           </motion.div>
         </motion.div>

@@ -6,14 +6,17 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { useLanguage, type Locale } from '@/contexts/LanguageContext'
 
 interface AchievementItem {
   _id: string
   title: string
+  title_id?: string
   category: string
   issuer?: string
   date: string
   description?: string
+  description_id?: string
   icon?: string
   link?: string
   featured?: boolean
@@ -28,30 +31,30 @@ const catColors: Record<string, { color: string; glow: string }> = {
   other: { color: '#888888', glow: 'rgba(136,136,136,0.2)' },
 }
 
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+function formatDate(date: string, locale: Locale) {
+  return new Date(date).toLocaleDateString(locale === 'id' ? 'id-ID' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+  })
+}
 
 export default function AchievementSection() {
   const [achievements, setAchievements] = useState<AchievementItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const { t } = useLanguage()
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const data = await getAchievements()
-        setAchievements(data)
-      } catch (e) {
-        console.error('Error fetching achievements:', e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetch()
+    getAchievements()
+      .then(setAchievements)
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
 
   const categories = Array.from(new Set(achievements.map((a) => a.category)))
-  const filtered = selectedCategory ? achievements.filter((a) => a.category === selectedCategory) : achievements
+  const filtered = selectedCategory
+    ? achievements.filter((a) => a.category === selectedCategory)
+    : achievements
 
   if (loading) {
     return (
@@ -76,7 +79,7 @@ export default function AchievementSection() {
 
       <div className="max-w-6xl mx-auto relative z-10">
         <TextReveal as="h2" className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
-          Achievements & Awards
+          {t.achievements.title}
         </TextReveal>
         <motion.p
           initial={{ opacity: 0 }}
@@ -85,7 +88,7 @@ export default function AchievementSection() {
           viewport={{ once: true }}
           className="text-[rgba(255,255,255,0.4)] text-lg mb-12 max-w-lg"
         >
-          Milestones and recognitions from my journey
+          {t.achievements.description}
         </motion.p>
 
         {/* Category filter */}
@@ -99,11 +102,13 @@ export default function AchievementSection() {
             <button
               onClick={() => setSelectedCategory(null)}
               className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
-                selectedCategory === null ? 'bg-white text-black' : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
+                selectedCategory === null
+                  ? 'bg-white text-black'
+                  : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
               }`}
               data-hover
             >
-              All
+              {t.achievements.all}
             </button>
             {categories.map((cat) => {
               const c = catColors[cat] || catColors.other
@@ -112,7 +117,9 @@ export default function AchievementSection() {
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-4 py-2 rounded-full text-xs font-medium capitalize transition-all ${
-                    selectedCategory === cat ? 'text-black' : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
+                    selectedCategory === cat
+                      ? 'text-black'
+                      : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
                   }`}
                   style={selectedCategory === cat ? { backgroundColor: c.color } : {}}
                   data-hover
@@ -139,6 +146,10 @@ function AchievementCard({ item, index }: { item: AchievementItem; index: number
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
   const c = catColors[item.category] || catColors.other
+  const { t, locale } = useLanguage()
+
+  const title = locale === 'id' && item.title_id ? item.title_id : item.title
+  const description = locale === 'id' && item.description_id ? item.description_id : item.description
 
   return (
     <motion.div
@@ -153,7 +164,7 @@ function AchievementCard({ item, index }: { item: AchievementItem; index: number
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1 min-w-0">
               {item.icon && <div className="text-2xl mb-2">{item.icon}</div>}
-              <h3 className="text-base font-semibold text-white line-clamp-2">{item.title}</h3>
+              <h3 className="text-base font-semibold text-white line-clamp-2">{title}</h3>
             </div>
             <span
               className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider flex-shrink-0 ml-2"
@@ -163,11 +174,17 @@ function AchievementCard({ item, index }: { item: AchievementItem; index: number
             </span>
           </div>
 
-          {item.issuer && <p className="text-[rgba(255,255,255,0.3)] text-xs mb-1">{item.issuer}</p>}
-          <p className="text-xs font-mono mb-2" style={{ color: c.color }}>{formatDate(item.date)}</p>
+          {item.issuer && (
+            <p className="text-[rgba(255,255,255,0.3)] text-xs mb-1">{item.issuer}</p>
+          )}
+          <p className="text-xs font-mono mb-2" style={{ color: c.color }}>
+            {formatDate(item.date, locale)}
+          </p>
 
-          {item.description && (
-            <p className="text-[rgba(255,255,255,0.4)] text-xs leading-relaxed line-clamp-2 mb-3">{item.description}</p>
+          {description && (
+            <p className="text-[rgba(255,255,255,0.4)] text-xs leading-relaxed line-clamp-2 mb-3">
+              {description}
+            </p>
           )}
 
           {item.link && (
@@ -179,7 +196,7 @@ function AchievementCard({ item, index }: { item: AchievementItem; index: number
               style={{ color: c.color }}
               data-hover
             >
-              View ↗
+              {t.achievements.view}
             </Link>
           )}
         </div>

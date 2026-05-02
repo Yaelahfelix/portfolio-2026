@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Skill {
   _id: string
@@ -17,18 +18,21 @@ interface SkillsSectionProps {
   skills: Skill[]
 }
 
-const categoryConfig: Record<string, { label: string; color: string; glow: string }> = {
-  frontend: { label: 'Frontend', color: '#06d6a0', glow: 'rgba(6, 214, 160, 0.2)' },
-  backend: { label: 'Backend', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.2)' },
-  tools: { label: 'Tools & DevOps', color: '#7c3aed', glow: 'rgba(124, 58, 237, 0.2)' },
-  database: { label: 'Database', color: '#f97316', glow: 'rgba(249, 115, 22, 0.2)' },
+const categoryColors: Record<string, { color: string; glow: string }> = {
+  frontend: { color: '#06d6a0', glow: 'rgba(6, 214, 160, 0.2)' },
+  backend: { color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.2)' },
+  tools: { color: '#7c3aed', glow: 'rgba(124, 58, 237, 0.2)' },
+  database: { color: '#f97316', glow: 'rgba(249, 115, 22, 0.2)' },
+  fullstack: { color: '#ec4899', glow: 'rgba(236, 72, 153, 0.2)' },
 }
 
 export function SkillsSection({ skills }: SkillsSectionProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null)
   const sectionRef = useRef<HTMLDivElement>(null)
-  const categories = ['frontend', 'backend', 'tools', 'database']
+  const { t } = useLanguage()
+
+  const categories = ['frontend', 'backend', 'tools', 'database', 'fullstack']
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -36,26 +40,15 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
   })
 
   const bgY = useTransform(scrollYProgress, [0, 1], [100, -100])
-
-  const filteredSkills = activeCategory
-    ? skills.filter((s) => s.category === activeCategory)
-    : skills
+  const filteredSkills = activeCategory ? skills.filter((s) => s.category === activeCategory) : skills
 
   return (
     <section id="skills" ref={sectionRef} className="section-padding relative overflow-hidden">
-      {/* Background elements */}
-      <motion.div
-        className="absolute inset-0 dot-bg"
-        style={{ y: bgY }}
-      />
+      <motion.div className="absolute inset-0 dot-bg" style={{ y: bgY }} />
 
       <div className="max-w-6xl mx-auto relative z-10">
-        {/* Section heading */}
-        <TextReveal
-          as="h2"
-          className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight"
-        >
-          Skills & Expertise
+        <TextReveal as="h2" className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
+          {t.skills.title}
         </TextReveal>
 
         <motion.p
@@ -65,7 +58,7 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
           viewport={{ once: true }}
           className="text-[rgba(255,255,255,0.4)] text-lg mb-12 max-w-lg"
         >
-          Technologies I work with daily to build amazing experiences
+          {t.skills.description}
         </motion.p>
 
         {/* Category filter tabs */}
@@ -85,12 +78,13 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
             }`}
             data-hover
           >
-            All
+            {t.skills.all}
           </button>
           {categories.map((cat) => {
-            const config = categoryConfig[cat]
+            const config = categoryColors[cat]
             const hasSkills = skills.some((s) => s.category === cat)
             if (!hasSkills) return null
+            const label = t.skills.categories[cat as keyof typeof t.skills.categories] ?? cat
 
             return (
               <button
@@ -104,19 +98,17 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
                 style={activeCategory === cat ? { backgroundColor: config.color } : {}}
                 data-hover
               >
-                {config.label}
+                {label}
               </button>
             )
           })}
         </motion.div>
 
         {/* Skills grid */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          layout
-        >
+        <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" layout>
           {filteredSkills.map((skill, index) => {
-            const config = categoryConfig[skill.category] || categoryConfig.frontend
+            const config = categoryColors[skill.category] || categoryColors.frontend
+            const label = t.skills.categories[skill.category as keyof typeof t.skills.categories] ?? skill.category
 
             return (
               <motion.div
@@ -140,25 +132,15 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
                         <h3 className="text-white font-semibold text-base group-hover:text-white transition-colors">
                           {skill.name}
                         </h3>
-                        <span
-                          className="text-xs font-medium mt-1 inline-block"
-                          style={{ color: config.color }}
-                        >
-                          {config.label}
+                        <span className="text-xs font-medium mt-1 inline-block" style={{ color: config.color }}>
+                          {label}
                         </span>
                       </div>
 
                       {/* Circular progress */}
                       <div className="relative w-12 h-12 flex-shrink-0">
                         <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                          <circle
-                            cx="24"
-                            cy="24"
-                            r="20"
-                            fill="none"
-                            stroke="rgba(255,255,255,0.06)"
-                            strokeWidth="3"
-                          />
+                          <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
                           <motion.circle
                             cx="24"
                             cy="24"
@@ -175,9 +157,10 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
                             transition={{ duration: 1.5, ease: 'easeOut', delay: index * 0.05 }}
                             viewport={{ once: true }}
                             style={{
-                              filter: hoveredSkill === skill._id
-                                ? `drop-shadow(0 0 6px ${config.glow})`
-                                : 'none',
+                              filter:
+                                hoveredSkill === skill._id
+                                  ? `drop-shadow(0 0 6px ${config.glow})`
+                                  : 'none',
                             }}
                           />
                         </svg>

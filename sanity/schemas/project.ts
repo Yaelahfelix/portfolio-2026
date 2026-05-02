@@ -24,9 +24,15 @@ const project = defineType({
     }),
     defineField({
       name: 'description',
-      title: 'Description',
+      title: 'Description (English)',
       type: 'text',
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'description_id',
+      title: 'Description (Indonesian)',
+      type: 'text',
+      description: 'Terjemahan deskripsi proyek dalam Bahasa Indonesia',
     }),
     defineField({
       name: 'image',
@@ -55,8 +61,14 @@ const project = defineType({
     }),
     defineField({
       name: 'caseStudy',
-      title: 'Case Study',
+      title: 'Case Study (English)',
       type: 'text',
+    }),
+    defineField({
+      name: 'caseStudy_id',
+      title: 'Case Study (Indonesian)',
+      type: 'text',
+      description: 'Terjemahan studi kasus dalam Bahasa Indonesia',
     }),
     defineField({
       name: 'featured',

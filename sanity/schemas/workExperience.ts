@@ -36,15 +36,28 @@ const workExperience = defineType({
     }),
     defineField({
       name: 'description',
-      title: 'Description',
+      title: 'Description (English)',
       type: 'text',
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'description_id',
+      title: 'Description (Indonesian)',
+      type: 'text',
+      description: 'Terjemahan deskripsi dalam Bahasa Indonesia',
+    }),
+    defineField({
       name: 'responsibilities',
-      title: 'Responsibilities',
+      title: 'Responsibilities (English)',
       type: 'array',
       of: [{ type: 'string' }],
+    }),
+    defineField({
+      name: 'responsibilities_id',
+      title: 'Responsibilities (Indonesian)',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'Terjemahan tanggung jawab dalam Bahasa Indonesia',
     }),
     defineField({
       name: 'technologies',

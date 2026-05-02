@@ -7,9 +7,15 @@ export default defineType({
   fields: [
     defineField({
       name: 'title',
-      title: 'Achievement Title',
+      title: 'Achievement Title (English)',
       type: 'string',
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'title_id',
+      title: 'Achievement Title (Indonesian)',
+      type: 'string',
+      description: 'Terjemahan judul pencapaian dalam Bahasa Indonesia',
     }),
     defineField({
       name: 'category',
@@ -42,9 +48,15 @@ export default defineType({
     }),
     defineField({
       name: 'description',
-      title: 'Description',
+      title: 'Description (English)',
       type: 'text',
       description: 'Details about the achievement',
+    }),
+    defineField({
+      name: 'description_id',
+      title: 'Description (Indonesian)',
+      type: 'text',
+      description: 'Terjemahan deskripsi dalam Bahasa Indonesia',
     }),
     defineField({
       name: 'icon',
@@ -77,7 +89,6 @@ export default defineType({
     select: {
       title: 'title',
       subtitle: 'issuer',
-      media: 'category',
     },
   },
 })

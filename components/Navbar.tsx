@@ -1,9 +1,11 @@
 'use client'
 
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import { MagneticButton } from './interactive/MagneticButton'
+import { LanguageToggle } from './LanguageToggle'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -11,26 +13,23 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const lastScrollY = useRef(0)
+  const { t } = useLanguage()
 
   const { scrollYProgress } = useScroll()
 
   useEffect(() => {
+    const sectionIds = ['skills', 'experience', 'education', 'projects', 'achievements', 'contact']
     const handleScroll = () => {
       const currentY = window.scrollY
       setScrolled(currentY > 50)
       setHidden(currentY > lastScrollY.current && currentY > 200)
       lastScrollY.current = currentY
 
-      // Detect active section
-      const sections = ['skills', 'experience', 'education', 'projects', 'achievements', 'contact']
-      for (const section of sections.reverse()) {
+      for (const section of [...sectionIds].reverse()) {
         const el = document.getElementById(section)
-        if (el) {
-          const rect = el.getBoundingClientRect()
-          if (rect.top <= 200) {
-            setActiveSection(section)
-            break
-          }
+        if (el && el.getBoundingClientRect().top <= 200) {
+          setActiveSection(section)
+          break
         }
       }
     }
@@ -40,11 +39,11 @@ export function Navbar() {
   }, [])
 
   const navItems = [
-    { name: 'Skills', href: '#skills', id: 'skills' },
-    { name: 'Experience', href: '#experience', id: 'experience' },
-    { name: 'Education', href: '#education', id: 'education' },
-    { name: 'Projects', href: '#projects', id: 'projects' },
-    { name: 'Achievements', href: '#achievements', id: 'achievements' },
+    { name: t.nav.skills, href: '#skills', id: 'skills' },
+    { name: t.nav.experience, href: '#experience', id: 'experience' },
+    { name: t.nav.education, href: '#education', id: 'education' },
+    { name: t.nav.projects, href: '#projects', id: 'projects' },
+    { name: t.nav.achievements, href: '#achievements', id: 'achievements' },
   ]
 
   return (
@@ -59,10 +58,11 @@ export function Navbar() {
       />
 
       <motion.nav
-        className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+          scrolled
             ? 'bg-[rgba(5,5,5,0.8)] backdrop-blur-xl border-b border-[rgba(255,255,255,0.05)]'
             : 'bg-transparent'
-          }`}
+        }`}
         animate={{ y: hidden ? -100 : 0 }}
         transition={{ duration: 0.3 }}
       >
@@ -84,12 +84,13 @@ export function Navbar() {
             {/* Desktop menu */}
             <div className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
-                <Link key={item.name} href={item.href}>
+                <Link key={item.id} href={item.href}>
                   <motion.div
-                    className={`relative px-4 py-2 text-sm font-medium transition-colors rounded-full ${activeSection === item.id
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors rounded-full ${
+                      activeSection === item.id
                         ? 'text-white'
                         : 'text-[rgba(255,255,255,0.4)] hover:text-[rgba(255,255,255,0.8)]'
-                      }`}
+                    }`}
                     data-hover
                     whileHover={{ scale: 1.05 }}
                   >
@@ -105,13 +106,17 @@ export function Navbar() {
                 </Link>
               ))}
 
+              <div className="ml-2">
+                <LanguageToggle />
+              </div>
+
               <MagneticButton
                 as="a"
                 href="#contact"
-                className="ml-4 px-5 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-[rgba(255,255,255,0.9)] transition-colors"
+                className="ml-2 px-5 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-[rgba(255,255,255,0.9)] transition-colors"
                 strength={0.2}
               >
-                Contact
+                {t.nav.contact}
               </MagneticButton>
             </div>
 
@@ -140,7 +145,7 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu - fullscreen overlay */}
+        {/* Mobile menu — fullscreen overlay */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -153,7 +158,7 @@ export function Navbar() {
               <div className="flex flex-col items-center justify-center h-full gap-8 -mt-16">
                 {navItems.map((item, i) => (
                   <motion.div
-                    key={item.name}
+                    key={item.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
@@ -162,25 +167,31 @@ export function Navbar() {
                     <Link
                       href={item.href}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`text-3xl font-semibold transition-colors ${activeSection === item.id ? 'gradient-text' : 'text-[rgba(255,255,255,0.5)] hover:text-white'
-                        }`}
+                      className={`text-3xl font-semibold transition-colors ${
+                        activeSection === item.id
+                          ? 'gradient-text'
+                          : 'text-[rgba(255,255,255,0.5)] hover:text-white'
+                      }`}
                     >
                       {item.name}
                     </Link>
                   </motion.div>
                 ))}
+
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   transition={{ delay: navItems.length * 0.08, duration: 0.3 }}
+                  className="flex flex-col items-center gap-4"
                 >
+                  <LanguageToggle />
                   <Link
                     href="#contact"
                     onClick={() => setMobileMenuOpen(false)}
                     className="px-8 py-3 bg-white text-black rounded-full text-lg font-medium"
                   >
-                    Contact
+                    {t.nav.contact}
                   </Link>
                 </motion.div>
               </div>

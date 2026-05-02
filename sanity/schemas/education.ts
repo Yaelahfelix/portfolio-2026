@@ -39,9 +39,15 @@ export default defineType({
     }),
     defineField({
       name: 'description',
-      title: 'Description',
+      title: 'Description (English)',
       type: 'text',
       description: 'Highlights, GPA, relevant coursework, etc.',
+    }),
+    defineField({
+      name: 'description_id',
+      title: 'Description (Indonesian)',
+      type: 'text',
+      description: 'Terjemahan deskripsi dalam Bahasa Indonesia',
     }),
     defineField({
       name: 'gpa',
@@ -61,7 +67,6 @@ export default defineType({
     select: {
       title: 'degree',
       subtitle: 'school',
-      media: 'field',
     },
   },
 })

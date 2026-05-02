@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
+import { useLanguage, type Locale } from '@/contexts/LanguageContext'
 
 interface WorkExp {
   _id: string
@@ -12,7 +13,9 @@ interface WorkExp {
   endDate?: string
   isCurrent: boolean
   description: string
+  description_id?: string
   responsibilities?: string[]
+  responsibilities_id?: string[]
   technologies?: string[]
 }
 
@@ -20,10 +23,18 @@ interface WorkExperienceSectionProps {
   experiences: WorkExp[]
 }
 
+function formatDate(dateString: string, locale: Locale) {
+  return new Date(dateString).toLocaleDateString(locale === 'id' ? 'id-ID' : 'en-US', {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 export function WorkExperienceSection({ experiences }: WorkExperienceSectionProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const sectionRef = useRef<HTMLDivElement>(null)
   const timelineRef = useRef<HTMLDivElement>(null)
+  const { t, locale } = useLanguage()
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -32,23 +43,13 @@ export function WorkExperienceSection({ experiences }: WorkExperienceSectionProp
 
   const lineHeight = useTransform(scrollYProgress, [0.1, 0.9], ['0%', '100%'])
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-  }
-
   return (
     <section id="experience" ref={sectionRef} className="section-padding relative overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 grid-bg opacity-30" />
 
       <div className="max-w-4xl mx-auto relative z-10">
-        {/* Section heading */}
-        <TextReveal
-          as="h2"
-          className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight"
-        >
-          Work Experience
+        <TextReveal as="h2" className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
+          {t.experience.title}
         </TextReveal>
 
         <motion.p
@@ -58,12 +59,11 @@ export function WorkExperienceSection({ experiences }: WorkExperienceSectionProp
           viewport={{ once: true }}
           className="text-[rgba(255,255,255,0.4)] text-lg mb-16 max-w-lg"
         >
-          My professional journey through the tech industry
+          {t.experience.description}
         </motion.p>
 
         {/* Timeline */}
         <div ref={timelineRef} className="relative">
-          {/* Animated timeline line */}
           <div className="absolute left-4 md:left-8 top-0 bottom-0 w-[1px] bg-[rgba(255,255,255,0.06)]">
             <motion.div
               className="w-full origin-top"
@@ -82,7 +82,7 @@ export function WorkExperienceSection({ experiences }: WorkExperienceSectionProp
                 index={index}
                 isExpanded={expandedId === exp._id}
                 onToggle={() => setExpandedId(expandedId === exp._id ? null : exp._id)}
-                formatDate={formatDate}
+                locale={locale}
               />
             ))}
           </div>
@@ -97,16 +97,23 @@ function TimelineEntry({
   index,
   isExpanded,
   onToggle,
-  formatDate,
+  locale,
 }: {
-  exp: WorkExp & { _id: string }
+  exp: WorkExp
   index: number
   isExpanded: boolean
   onToggle: () => void
-  formatDate: (d: string) => string
+  locale: Locale
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const { t } = useLanguage()
+
+  const description = locale === 'id' && exp.description_id ? exp.description_id : exp.description
+  const responsibilities =
+    locale === 'id' && exp.responsibilities_id?.length
+      ? exp.responsibilities_id
+      : exp.responsibilities
 
   return (
     <motion.div
@@ -146,49 +153,44 @@ function TimelineEntry({
           <div className="flex items-center gap-2 flex-shrink-0">
             {exp.isCurrent && (
               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#06d6a0]/10 text-[#06d6a0] border border-[#06d6a0]/20">
-                Current
+                {t.experience.current}
               </span>
             )}
             <span className="text-xs text-[rgba(255,255,255,0.3)] font-mono">
-              {formatDate(exp.startDate)} — {exp.isCurrent ? 'Present' : formatDate(exp.endDate || '')}
+              {formatDate(exp.startDate, locale)} —{' '}
+              {exp.isCurrent ? t.experience.present : formatDate(exp.endDate || '', locale)}
             </span>
           </div>
         </div>
 
-        <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-3">{exp.description}</p>
+        <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed mb-3">{description}</p>
 
         {/* Expand indicator */}
         <motion.div
           className="flex items-center gap-1 text-xs text-[rgba(255,255,255,0.3)]"
           animate={{ opacity: isExpanded ? 0 : 1 }}
         >
-          <motion.span
-            animate={{ rotate: isExpanded ? 90 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <motion.span animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
             →
           </motion.span>
-          Click to {isExpanded ? 'collapse' : 'expand'}
+          {isExpanded ? t.experience.clickCollapse : t.experience.clickExpand}
         </motion.div>
 
         {/* Expanded content */}
         <motion.div
           initial={false}
-          animate={{
-            height: isExpanded ? 'auto' : 0,
-            opacity: isExpanded ? 1 : 0,
-          }}
+          animate={{ height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}
           className="overflow-hidden"
         >
           <div className="pt-4 border-t border-[rgba(255,255,255,0.06)] mt-4">
-            {exp.responsibilities && exp.responsibilities.length > 0 && (
+            {responsibilities && responsibilities.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.4)] font-semibold mb-3">
-                  Key Responsibilities
+                  {t.experience.responsibilities}
                 </p>
                 <ul className="space-y-2">
-                  {exp.responsibilities.map((resp, i) => (
+                  {responsibilities.map((resp, i) => (
                     <motion.li
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
@@ -207,7 +209,7 @@ function TimelineEntry({
             {exp.technologies && exp.technologies.length > 0 && (
               <div>
                 <p className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.4)] font-semibold mb-3">
-                  Technologies
+                  {t.experience.technologies}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {exp.technologies.map((tech, i) => (

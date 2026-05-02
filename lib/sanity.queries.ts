@@ -1,7 +1,7 @@
 import { client } from './sanity.client'
 
 export async function getSkills() {
-  const skills = await client.fetch(`
+  return client.fetch(`
     *[_type == "skill"] | order(order asc) {
       _id,
       name,
@@ -10,11 +10,10 @@ export async function getSkills() {
       icon,
     }
   `)
-  return skills
 }
 
 export async function getWorkExperience() {
-  const experience = await client.fetch(`
+  return client.fetch(`
     *[_type == "workExperience"] | order(order desc) {
       _id,
       company,
@@ -23,20 +22,22 @@ export async function getWorkExperience() {
       endDate,
       isCurrent,
       description,
+      description_id,
       responsibilities,
+      responsibilities_id,
       technologies,
     }
   `)
-  return experience
 }
 
 export async function getProjects() {
-  const projects = await client.fetch(`
+  return client.fetch(`
     *[_type == "project"] | order(order asc) {
       _id,
       title,
       slug,
       description,
+      description_id,
       image {
         asset -> {
           url
@@ -46,14 +47,14 @@ export async function getProjects() {
       liveUrl,
       githubUrl,
       caseStudy,
+      caseStudy_id,
       featured,
     }
   `)
-  return projects
 }
 
 export async function getEducation() {
-  const education = await client.fetch(`
+  return client.fetch(`
     *[_type == "education"] | order(order asc) {
       _id,
       school,
@@ -62,25 +63,26 @@ export async function getEducation() {
       startDate,
       endDate,
       description,
+      description_id,
       gpa,
     }
   `)
-  return education
 }
 
 export async function getAchievements() {
-  const achievements = await client.fetch(`
+  return client.fetch(`
     *[_type == "achievement"] | order(order asc) {
       _id,
       title,
+      title_id,
       category,
       issuer,
       date,
       description,
+      description_id,
       icon,
       link,
       featured,
     }
   `)
-  return achievements
 }

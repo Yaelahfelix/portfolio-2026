@@ -5,17 +5,20 @@ import Image from 'next/image'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Project {
   _id: string
   title: string
   slug: string
   description: string
+  description_id?: string
   image: { asset: { url: string } }
   technologies?: string[]
   liveUrl?: string
   githubUrl?: string
   caseStudy?: string
+  caseStudy_id?: string
   featured?: boolean
 }
 
@@ -26,18 +29,18 @@ interface ProjectsSectionProps {
 export function ProjectsSection({ projects }: ProjectsSectionProps) {
   const [filter, setFilter] = useState<string | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const sectionRef = useRef<HTMLDivElement>(null)
+  const { t } = useLanguage()
 
   const allTechs = Array.from(new Set(projects.flatMap((p) => p.technologies || []))).sort()
   const filteredProjects = filter ? projects.filter((p) => p.technologies?.includes(filter)) : projects
 
   return (
-    <section id="projects" ref={sectionRef} className="section-padding relative overflow-hidden">
+    <section id="projects" className="section-padding relative overflow-hidden">
       <div className="absolute inset-0 grid-bg opacity-30" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <TextReveal as="h2" className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
-          Featured Projects
+          {t.projects.title}
         </TextReveal>
         <motion.p
           initial={{ opacity: 0 }}
@@ -46,7 +49,7 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
           viewport={{ once: true }}
           className="text-[rgba(255,255,255,0.4)] text-lg mb-12 max-w-lg"
         >
-          Showcasing my best work and technical achievements
+          {t.projects.description}
         </motion.p>
 
         {/* Filter */}
@@ -60,18 +63,24 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
           >
             <button
               onClick={() => setFilter(null)}
-              className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${filter === null ? 'bg-white text-black' : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
-                }`}
+              className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                filter === null
+                  ? 'bg-white text-black'
+                  : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
+              }`}
               data-hover
             >
-              All
+              {t.projects.all}
             </button>
             {allTechs.map((tech) => (
               <button
                 key={tech}
                 onClick={() => setFilter(tech)}
-                className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${filter === tech ? 'bg-white text-black' : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
-                  }`}
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                  filter === tech
+                    ? 'bg-white text-black'
+                    : 'bg-[rgba(255,255,255,0.04)] text-[rgba(255,255,255,0.5)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)]'
+                }`}
                 data-hover
               >
                 {tech}
@@ -93,25 +102,36 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
         </motion.div>
 
         {filteredProjects.length === 0 && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-[rgba(255,255,255,0.4)] py-12">
-            No projects found with the selected technology.
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-[rgba(255,255,255,0.4)] py-12"
+          >
+            {t.projects.noProjects}
           </motion.p>
         )}
       </div>
 
-      {/* Project Detail Modal */}
-      <ProjectModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-      />
+      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
     </section>
   )
 }
 
-function ProjectCard({ project, index, onClick }: { project: Project; index: number; onClick: () => void }) {
+function ProjectCard({
+  project,
+  index,
+  onClick,
+}: {
+  project: Project
+  index: number
+  onClick: () => void
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
   const [isHovered, setIsHovered] = useState(false)
+  const { t, locale } = useLanguage()
+
+  const description = locale === 'id' && project.description_id ? project.description_id : project.description
 
   return (
     <motion.div
@@ -123,7 +143,9 @@ function ProjectCard({ project, index, onClick }: { project: Project; index: num
       onClick={onClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick() }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClick()
+      }}
       style={{ cursor: 'none' }}
     >
       <TiltCard tiltAmount={5} scale={1.02}>
@@ -143,7 +165,6 @@ function ProjectCard({ project, index, onClick }: { project: Project; index: num
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
             )}
-            {/* Overlay */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent flex items-end p-5 gap-3"
               initial={{ opacity: 0 }}
@@ -154,7 +175,7 @@ function ProjectCard({ project, index, onClick }: { project: Project; index: num
                 whileHover={{ scale: 1.05 }}
                 className="px-4 py-2 bg-[rgba(255,255,255,0.1)] backdrop-blur-md rounded-lg text-white text-xs font-medium border border-[rgba(255,255,255,0.1)]"
               >
-                View Details
+                {t.projects.viewDetails}
               </motion.span>
             </motion.div>
           </div>
@@ -162,16 +183,21 @@ function ProjectCard({ project, index, onClick }: { project: Project; index: num
           {/* Content */}
           <div className="p-5">
             <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
-            <p className="text-[rgba(255,255,255,0.4)] text-sm mb-4 line-clamp-2">{project.description}</p>
+            <p className="text-[rgba(255,255,255,0.4)] text-sm mb-4 line-clamp-2">{description}</p>
             {project.technologies && project.technologies.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {project.technologies.slice(0, 4).map((tech, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] rounded-full text-[10px] text-[rgba(255,255,255,0.5)] font-medium">
+                  <span
+                    key={i}
+                    className="px-2.5 py-1 bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] rounded-full text-[10px] text-[rgba(255,255,255,0.5)] font-medium"
+                  >
                     {tech}
                   </span>
                 ))}
                 {project.technologies.length > 4 && (
-                  <span className="px-2.5 py-1 text-[10px] text-[rgba(255,255,255,0.3)] font-medium">+{project.technologies.length - 4}</span>
+                  <span className="px-2.5 py-1 text-[10px] text-[rgba(255,255,255,0.3)] font-medium">
+                    +{project.technologies.length - 4}
+                  </span>
                 )}
               </div>
             )}
@@ -182,36 +208,49 @@ function ProjectCard({ project, index, onClick }: { project: Project; index: num
   )
 }
 
-/* ========== Project Detail Modal ========== */
-function ProjectModal({ project, onClose }: { project: Project | null; onClose: () => void }) {
+function ProjectModal({
+  project,
+  onClose,
+}: {
+  project: Project | null
+  onClose: () => void
+}) {
   const overlayRef = useRef<HTMLDivElement>(null)
+  const { t, locale } = useLanguage()
 
-  // Lock body scroll when modal is open
   useEffect(() => {
-    if (project) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = project ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
     }
   }, [project])
 
-  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
-    if (project) {
-      window.addEventListener('keydown', handleKeyDown)
-    }
+    if (project) window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [project, onClose])
 
-  const handleOverlayClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === overlayRef.current) onClose()
-  }, [onClose])
+  const handleOverlayClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.target === overlayRef.current) onClose()
+    },
+    [onClose],
+  )
+
+  const description = project
+    ? locale === 'id' && project.description_id
+      ? project.description_id
+      : project.description
+    : ''
+
+  const caseStudy = project
+    ? locale === 'id' && project.caseStudy_id
+      ? project.caseStudy_id
+      : project.caseStudy
+    : ''
 
   return (
     <AnimatePresence>
@@ -226,7 +265,6 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
           onClick={handleOverlayClick}
           style={{ cursor: 'auto' }}
         >
-          {/* Backdrop */}
           <motion.div
             className="absolute inset-0 bg-black/80 backdrop-blur-md"
             initial={{ opacity: 0 }}
@@ -234,17 +272,13 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
             exit={{ opacity: 0 }}
           />
 
-          {/* Modal Content */}
           <motion.div
             className="relative z-10 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#0a0a0a] shadow-2xl"
             initial={{ opacity: 0, scale: 0.92, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 30 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'rgba(6, 214, 160, 0.3) transparent',
-            }}
+            style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(6, 214, 160, 0.3) transparent' }}
           >
             {/* Close Button */}
             <button
@@ -253,7 +287,13 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
               data-hover
               style={{ cursor: 'none' }}
             >
-              <svg className="w-5 h-5 text-[rgba(255,255,255,0.6)] group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg
+                className="w-5 h-5 text-[rgba(255,255,255,0.6)] group-hover:text-white transition-colors"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -268,12 +308,10 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-
-                {/* Featured badge */}
                 {project.featured && (
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-gradient-to-r from-[#06d6a0] to-[#3b82f6] text-white shadow-lg">
-                      ★ Featured
+                      {t.projects.featured}
                     </span>
                   </div>
                 )}
@@ -282,12 +320,10 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
 
             {/* Content */}
             <div className="p-6 sm:p-8">
-              {/* Title */}
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">
                 {project.title}
               </h2>
 
-              {/* Technologies */}
               {project.technologies && project.technologies.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.technologies.map((tech, i) => (
@@ -301,34 +337,30 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
                 </div>
               )}
 
-              {/* Divider */}
               <div className="h-px w-full bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.08)] to-transparent mb-6" />
 
-              {/* Description */}
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-wider mb-3">
-                  Description
+                  {t.projects.descriptionLabel}
                 </h3>
                 <p className="text-[rgba(255,255,255,0.7)] text-sm sm:text-base leading-relaxed whitespace-pre-line">
-                  {project.description}
+                  {description}
                 </p>
               </div>
 
-              {/* Case Study */}
-              {project.caseStudy && (
+              {caseStudy && (
                 <div className="mb-6">
                   <h3 className="text-sm font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-wider mb-3">
-                    Case Study
+                    {t.projects.caseStudy}
                   </h3>
                   <div className="p-4 sm:p-5 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.06)]">
                     <p className="text-[rgba(255,255,255,0.6)] text-sm leading-relaxed whitespace-pre-line">
-                      {project.caseStudy}
+                      {caseStudy}
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Divider */}
               <div className="h-px w-full bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.08)] to-transparent mb-6" />
 
               {/* Action Buttons */}
@@ -346,7 +378,7 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
                       <path d="M11 3a1 1 0 100 2h3.586L9.293 9.293a1 1 0 001.414 1.414L16 6.414V10a1 1 0 102 0V4a1 1 0 00-1-1h-6z" />
                       <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
                     </svg>
-                    Live Preview
+                    {t.projects.livePreview}
                   </a>
                 )}
                 {project.githubUrl && (
@@ -359,9 +391,13 @@ function ProjectModal({ project, onClose }: { project: Project | null; onClose: 
                     style={{ cursor: 'none' }}
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.868-.013-1.703-2.782.603-3.369-1.343-3.369-1.343-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.544 2.914 1.186.092-.924.35-1.554.636-1.911-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.025A9.578 9.578 0 0110 4.836c.85.004 1.705.114 2.504.336 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.578.688.48C17.137 18.195 20 14.44 20 10.017 20 4.484 15.522 0 10 0z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.868-.013-1.703-2.782.603-3.369-1.343-3.369-1.343-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.544 2.914 1.186.092-.924.35-1.554.636-1.911-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.025A9.578 9.578 0 0110 4.836c.85.004 1.705.114 2.504.336 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.578.688.48C17.137 18.195 20 14.44 20 10.017 20 4.484 15.522 0 10 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
-                    Source Code
+                    {t.projects.sourceCode}
                   </a>
                 )}
               </div>

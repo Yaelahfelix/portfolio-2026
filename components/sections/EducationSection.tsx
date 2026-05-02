@@ -5,6 +5,7 @@ import { getEducation } from '@/lib/sanity.queries'
 import { useEffect, useState, useRef } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { useLanguage, type Locale } from '@/contexts/LanguageContext'
 
 interface EducationItem {
   _id: string
@@ -14,29 +15,28 @@ interface EducationItem {
   startDate: string
   endDate?: string
   description?: string
+  description_id?: string
   gpa?: string
+}
+
+function formatDate(date: string, locale: Locale) {
+  return new Date(date).toLocaleDateString(locale === 'id' ? 'id-ID' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+  })
 }
 
 export default function EducationSection() {
   const [education, setEducation] = useState<EducationItem[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useLanguage()
 
   useEffect(() => {
-    const fetchEducation = async () => {
-      try {
-        const data = await getEducation()
-        setEducation(data)
-      } catch (error) {
-        console.error('Error fetching education:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchEducation()
+    getEducation()
+      .then(setEducation)
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
-
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
 
   if (loading) {
     return (
@@ -60,7 +60,7 @@ export default function EducationSection() {
       <div className="absolute inset-0 dot-bg opacity-30" />
       <div className="max-w-6xl mx-auto relative z-10">
         <TextReveal as="h2" className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight">
-          Education
+          {t.education.title}
         </TextReveal>
         <motion.p
           initial={{ opacity: 0 }}
@@ -69,11 +69,11 @@ export default function EducationSection() {
           viewport={{ once: true }}
           className="text-[rgba(255,255,255,0.4)] text-lg mb-12 max-w-lg"
         >
-          My academic background and learning journey
+          {t.education.description}
         </motion.p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {education.map((edu, index) => (
-            <EduCard key={edu._id} edu={edu} index={index} formatDate={formatDate} />
+            <EduCard key={edu._id} edu={edu} index={index} />
           ))}
         </div>
       </div>
@@ -81,9 +81,12 @@ export default function EducationSection() {
   )
 }
 
-function EduCard({ edu, index, formatDate }: { edu: EducationItem; index: number; formatDate: (d: string) => string }) {
+function EduCard({ edu, index }: { edu: EducationItem; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
+  const { t, locale } = useLanguage()
+
+  const description = locale === 'id' && edu.description_id ? edu.description_id : edu.description
 
   return (
     <motion.div
@@ -100,21 +103,24 @@ function EduCard({ edu, index, formatDate }: { edu: EducationItem; index: number
               <h3 className="text-xl font-bold text-white mb-1">{edu.degree}</h3>
               <p className="text-[#3b82f6] font-medium text-sm">{edu.school}</p>
               <p className="text-[rgba(255,255,255,0.3)] text-xs mt-1">
-                Field: <span className="text-[#7c3aed]">{edu.field}</span>
+                {t.education.field} <span className="text-[#7c3aed]">{edu.field}</span>
               </p>
             </div>
             <div className="flex flex-col items-start sm:items-end gap-1 flex-shrink-0">
               <span className="text-xs text-[rgba(255,255,255,0.3)] font-mono">
-                {formatDate(edu.startDate)} — {edu.endDate ? formatDate(edu.endDate) : 'Present'}
+                {formatDate(edu.startDate, locale)} —{' '}
+                {edu.endDate ? formatDate(edu.endDate, locale) : t.education.present}
               </span>
               {edu.gpa && (
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#06d6a0]/10 text-[#06d6a0] border border-[#06d6a0]/20">
-                  GPA: {edu.gpa}
+                  {t.education.gpa} {edu.gpa}
                 </span>
               )}
             </div>
           </div>
-          {edu.description && <p className="text-[rgba(255,255,255,0.4)] text-sm leading-relaxed">{edu.description}</p>}
+          {description && (
+            <p className="text-[rgba(255,255,255,0.4)] text-sm leading-relaxed">{description}</p>
+          )}
         </div>
       </TiltCard>
     </motion.div>
