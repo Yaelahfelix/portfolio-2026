@@ -1,14 +1,22 @@
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowDown } from 'lucide-react'
 import { MagneticButton } from '../interactive/MagneticButton'
-import { useMousePosition } from '@/hooks/useMousePosition'
 import { useLanguage } from '@/contexts/LanguageContext'
+
+const LINE_VARIANTS = {
+  hidden: { y: '110%', opacity: 0 },
+  visible: (index: number) => ({
+    y: '0%',
+    opacity: 1,
+    transition: { duration: 1, delay: 0.35 + index * 0.12, ease: [0.16, 1, 0.3, 1] as const },
+  }),
+}
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mouse = useMousePosition()
   const { t } = useLanguage()
   const roles = t.hero.roles
 
@@ -21,154 +29,125 @@ export function HeroSection() {
     offset: ['start start', 'end start'],
   })
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-  const heroY = useTransform(scrollYProgress, [0, 0.8], [0, -100])
-  const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.95])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0])
+  const contentY = useTransform(scrollYProgress, [0, 0.8], [0, -120])
+  const contentBlur = useTransform(scrollYProgress, [0, 0.7], ['blur(0px)', 'blur(9px)'])
 
   useEffect(() => {
     const currentWord = roles[currentRole]
-    const timeout = setTimeout(() => {
-      if (!isDeleting) {
-        if (displayText.length < currentWord.length) {
-          setDisplayText(currentWord.slice(0, displayText.length + 1))
-        } else {
-          setTimeout(() => setIsDeleting(true), 2000)
-        }
-      } else {
-        if (displayText.length > 0) {
+    const timeout = setTimeout(
+      () => {
+        if (!isDeleting) {
+          if (displayText.length < currentWord.length) {
+            setDisplayText(currentWord.slice(0, displayText.length + 1))
+          } else {
+            setTimeout(() => setIsDeleting(true), 2000)
+          }
+        } else if (displayText.length > 0) {
           setDisplayText(currentWord.slice(0, displayText.length - 1))
         } else {
           setIsDeleting(false)
           setCurrentRole((prev) => (prev + 1) % roles.length)
         }
-      }
-    }, isDeleting ? 40 : 80)
+      },
+      isDeleting ? 40 : 80
+    )
 
     return () => clearTimeout(timeout)
   }, [displayText, isDeleting, currentRole, roles])
 
+  const headingLines = [
+    { text: t.hero.heading1, gradient: false },
+    { text: t.hero.heading2, gradient: true },
+    { text: t.hero.heading3, gradient: false },
+  ]
+
   return (
-    <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated mesh gradient background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] opacity-30"
-          style={{
-            background: `
-              radial-gradient(circle at 30% 20%, rgba(6, 214, 160, 0.15) 0%, transparent 50%),
-              radial-gradient(circle at 70% 60%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-              radial-gradient(circle at 50% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)
-            `,
-          }}
-        />
-        <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full pointer-events-none"
-          style={{
-            x: mouse.x - 300,
-            y: mouse.y - 300,
-            background: 'radial-gradient(circle, rgba(6, 214, 160, 0.06) 0%, transparent 70%)',
-          }}
-        />
-      </div>
+    <section
+      id="hero"
+      ref={containerRef}
+      className="relative flex min-h-screen items-center justify-center overflow-hidden"
+    >
+      {/* Legibility scrim + grid */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(5,5,5,0.88)_0%,rgba(5,5,5,0.45)_42%,rgba(5,5,5,0.15)_70%,transparent_88%)]" />
+      <div className="grid-bg pointer-events-none absolute inset-0 opacity-40" />
 
-      {/* Floating geometric shapes */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute"
-            animate={{ y: [0, -20, 0], rotate: [0, 180, 360] }}
-            transition={{ duration: 10 + i * 2, repeat: Infinity, ease: 'linear', delay: i * 0.5 }}
-            style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              transform: `translate(${mouse.normalizedX * (10 + i * 5)}px, ${mouse.normalizedY * (10 + i * 5)}px)`,
-            }}
-          >
-            <div
-              className={`${
-                i % 3 === 0 ? 'w-2 h-2 rounded-full' : i % 3 === 1 ? 'w-3 h-3 rotate-45' : 'w-4 h-[1px]'
-              } ${i % 2 === 0 ? 'bg-[#06d6a0]/20' : 'bg-[#7c3aed]/20'}`}
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="absolute inset-0 grid-bg opacity-50" />
-
-      {/* Main content */}
       <motion.div
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-        style={{ opacity: heroOpacity, y: heroY, scale: heroScale }}
+        className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8"
+        style={{ opacity: contentOpacity, y: contentY, filter: contentBlur }}
       >
-        {/* Badge */}
+        {/* Availability badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
           className="mb-8 inline-block"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.6)] text-sm font-medium">
-            <span className="w-2 h-2 rounded-full bg-[#06d6a0] animate-pulse-glow" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-sm font-medium text-[rgba(255,255,255,0.65)] backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#06d6a0] opacity-70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#06d6a0]" />
+            </span>
             {t.hero.badge}
           </span>
         </motion.div>
 
-        {/* Main heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6">
-            <span className="block text-white">{t.hero.heading1}</span>
-            <span className="block gradient-text mt-2">{t.hero.heading2}</span>
-            <span className="block text-white mt-2">{t.hero.heading3}</span>
-          </h1>
-        </motion.div>
+        {/* Headline — each line rises out of its own mask */}
+        <h1 className="mb-6 text-5xl font-bold leading-[0.92] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+          {headingLines.map((line, index) => (
+            <span key={line.text} className="block overflow-hidden py-[0.06em]">
+              <motion.span
+                className={`block ${line.gradient ? 'gradient-text animate-gradient' : 'text-white'}`}
+                custom={index}
+                variants={LINE_VARIANTS}
+                initial="hidden"
+                animate="visible"
+              >
+                {line.text}
+              </motion.span>
+            </span>
+          ))}
+        </h1>
 
-        {/* Typing role */}
-        <motion.div
+        {/* Typed role */}
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mb-8"
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="mb-8 font-mono text-lg text-[rgba(255,255,255,0.4)] sm:text-xl"
         >
-          <p className="text-lg sm:text-xl text-[rgba(255,255,255,0.4)] font-mono">
-            {'<'}
-            <span className="text-[#06d6a0]">{displayText}</span>
-            <motion.span
-              animate={{ opacity: [1, 0] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
-              className="text-[#06d6a0]"
-            >
-              |
-            </motion.span>
-            {' />'}
-          </p>
-        </motion.div>
+          {'<'}
+          <span className="text-[#06d6a0]">{displayText}</span>
+          <motion.span
+            animate={{ opacity: [1, 0] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+            className="text-[#06d6a0]"
+          >
+            |
+          </motion.span>
+          {' />'}
+        </motion.p>
 
-        {/* Description */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1 }}
-          className="text-base sm:text-lg text-[rgba(255,255,255,0.5)] max-w-xl mx-auto mb-12 text-pretty leading-relaxed"
+          transition={{ duration: 0.6, delay: 1.05 }}
+          className="mx-auto mb-9 max-w-xl text-pretty text-base leading-relaxed text-[rgba(255,255,255,0.5)] sm:text-lg"
         >
           {t.hero.description}
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.2 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          className="flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <MagneticButton
             as="a"
             href="#projects"
-            className="group px-8 py-4 bg-white text-black rounded-full font-semibold text-sm hover:bg-[rgba(255,255,255,0.9)] transition-all inline-flex items-center gap-2"
+            className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-all hover:bg-[rgba(255,255,255,0.9)]"
             strength={0.3}
           >
             {t.hero.viewWork}
@@ -184,32 +163,53 @@ export function HeroSection() {
           <MagneticButton
             as="a"
             href="#contact"
-            className="px-8 py-4 bg-transparent border border-white/20 text-white rounded-full font-semibold text-sm hover:bg-[rgba(255,255,255,0.04)] hover:border-white/30 transition-all"
+            className="rounded-full border border-white/20 bg-transparent px-8 py-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-[#06d6a0]/60 hover:bg-[#06d6a0]/10"
             strength={0.3}
           >
             {t.hero.getInTouch}
           </MagneticButton>
         </motion.div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        {/* Stats */}
+        <motion.dl
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 1.45 }}
+          className="mx-auto mt-11 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06]"
         >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="flex flex-col items-center gap-2"
-          >
-            <span className="text-[10px] uppercase tracking-[0.3em] text-[rgba(255,255,255,0.3)] font-medium">
-              {t.hero.scroll}
-            </span>
-            <div className="w-[1px] h-8 bg-gradient-to-b from-white/30 to-transparent" />
-          </motion.div>
-        </motion.div>
+          {t.hero.stats.map((stat) => (
+            <div key={stat.label} className="bg-[#08080b]/70 px-4 py-4 backdrop-blur-md">
+              <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/30">
+                {stat.label}
+              </dt>
+              <dd className="mt-1.5 text-2xl font-bold text-white">{stat.value}</dd>
+            </div>
+          ))}
+        </motion.dl>
       </motion.div>
+
+      {/* Scroll cue */}
+      <motion.a
+        href="#skills"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+        style={{ opacity: contentOpacity }}
+        className="absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 sm:block [@media(max-height:880px)]:!hidden"
+        aria-label={t.hero.scroll}
+        data-hover
+      >
+        <motion.span
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex flex-col items-center gap-2 text-[rgba(255,255,255,0.3)] transition-colors hover:text-[#06d6a0]"
+        >
+          <span className="text-[10px] font-medium uppercase tracking-[0.3em]">
+            {t.hero.scroll}
+          </span>
+          <ArrowDown className="h-3.5 w-3.5" />
+        </motion.span>
+      </motion.a>
     </section>
   )
 }

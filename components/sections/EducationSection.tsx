@@ -5,6 +5,7 @@ import { getEducation } from '@/lib/sanity.queries'
 import { useEffect, useState, useRef } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { SpotlightCard } from '../interactive/SpotlightCard'
 import { useLanguage, type Locale } from '@/contexts/LanguageContext'
 
 interface EducationItem {
@@ -96,8 +97,17 @@ function EduCard({ edu, index }: { edu: EducationItem; index: number }) {
       transition={{ duration: 0.6, delay: index * 0.15 }}
     >
       <TiltCard tiltAmount={6} scale={1.01}>
-        <div className="glass-card glass-card-hover p-6 h-full group" data-hover>
-          <div className="h-[2px] w-full bg-gradient-to-r from-[#06d6a0] via-[#3b82f6] to-[#7c3aed] rounded-full mb-5 opacity-50 group-hover:opacity-100 transition-opacity" />
+        <SpotlightCard color="#3b82f6" radius={380}>
+        <div className="group h-full p-6" data-hover>
+          <div className="mb-5 h-[2px] w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+            <motion.div
+              className="h-full w-full bg-gradient-to-r from-[#06d6a0] via-[#3b82f6] to-[#7c3aed]"
+              initial={{ scaleX: 0 }}
+              animate={isInView ? { scaleX: 1 } : {}}
+              transition={{ duration: 1.1, ease: 'easeOut', delay: 0.2 + index * 0.15 }}
+              style={{ originX: 0 }}
+            />
+          </div>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
             <div>
               <h3 className="text-xl font-bold text-white mb-1">{edu.degree}</h3>
@@ -122,6 +132,7 @@ function EduCard({ edu, index }: { edu: EducationItem; index: number }) {
             <p className="text-[rgba(255,255,255,0.4)] text-sm leading-relaxed">{description}</p>
           )}
         </div>
+        </SpotlightCard>
       </TiltCard>
     </motion.div>
   )

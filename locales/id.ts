@@ -20,11 +20,17 @@ export const id: Translations = {
     viewWork: 'Lihat Karya Saya',
     getInTouch: 'Hubungi Saya',
     scroll: 'Gulir',
+    stats: [
+      { label: 'Pengalaman', value: '4+ thn' },
+      { label: 'Proyek', value: '30+' },
+      { label: 'Teknologi', value: '20+' },
+    ],
   },
   skills: {
     title: 'Keahlian & Teknologi',
     description: 'Teknologi yang saya gunakan setiap hari untuk membangun pengalaman luar biasa',
     all: 'Semua',
+    sphereHint: 'Geser bolanya · Ketuk tagnya',
     categories: {
       frontend: 'Frontend',
       backend: 'Backend',
@@ -89,5 +95,7 @@ export const id: Translations = {
     idLabel: 'Indonesia',
     enSubtitle: 'Continue in English',
     idSubtitle: 'Lanjutkan dalam Bahasa Indonesia',
+    booting: 'Menyiapkan runtime WebGL',
+    ready: 'Siap',
   },
 }

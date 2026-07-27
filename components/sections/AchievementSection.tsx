@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { SpotlightCard } from '../interactive/SpotlightCard'
 import { useLanguage, type Locale } from '@/contexts/LanguageContext'
 
 interface AchievementItem {
@@ -160,7 +161,8 @@ function AchievementCard({ item, index }: { item: AchievementItem; index: number
       transition={{ duration: 0.4, delay: index * 0.06 }}
     >
       <TiltCard tiltAmount={5} scale={1.02}>
-        <div className="glass-card glass-card-hover p-5 h-full group" data-hover>
+        <SpotlightCard color={c.color} radius={300}>
+        <div className="group h-full p-5" data-hover>
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1 min-w-0">
               {item.icon && <div className="text-2xl mb-2">{item.icon}</div>}
@@ -200,6 +202,7 @@ function AchievementCard({ item, index }: { item: AchievementItem; index: number
             </Link>
           )}
         </div>
+        </SpotlightCard>
       </TiltCard>
     </motion.div>
   )

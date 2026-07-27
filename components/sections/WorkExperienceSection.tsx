@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
+import { SpotlightCard } from '../interactive/SpotlightCard'
 import { useLanguage, type Locale } from '@/contexts/LanguageContext'
 
 interface WorkExp {
@@ -124,6 +125,13 @@ function TimelineEntry({
       className="relative pl-12 md:pl-20"
     >
       {/* Timeline dot */}
+      {exp.isCurrent && (
+        <motion.span
+          className="absolute left-4 top-6 h-[9px] w-[9px] -translate-x-1/2 rounded-full bg-[#06d6a0] md:left-8"
+          animate={{ scale: [1, 3.2, 1], opacity: [0.55, 0, 0.55] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeOut' }}
+        />
+      )}
       <motion.div
         className="absolute left-4 md:left-8 top-6 w-[9px] h-[9px] rounded-full -translate-x-1/2 z-10"
         style={{
@@ -137,11 +145,12 @@ function TimelineEntry({
       />
 
       {/* Card */}
+      <SpotlightCard color={exp.isCurrent ? '#06d6a0' : '#3b82f6'} radius={340}>
       <motion.div
-        className="glass-card p-6 cursor-pointer group"
+        className="group cursor-pointer p-6"
         onClick={onToggle}
-        whileHover={{ borderColor: 'rgba(255,255,255,0.1)' }}
         data-hover
+        data-cursor-label={isExpanded ? 'close' : 'open'}
       >
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
           <div>
@@ -229,6 +238,7 @@ function TimelineEntry({
           </div>
         </motion.div>
       </motion.div>
+      </SpotlightCard>
     </motion.div>
   )
 }

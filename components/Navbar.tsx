@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import { MagneticButton } from './interactive/MagneticButton'
@@ -15,10 +15,15 @@ export function Navbar() {
   const lastScrollY = useRef(0)
   const { t } = useLanguage()
 
-  const { scrollYProgress } = useScroll()
-
   useEffect(() => {
-    const sectionIds = ['skills', 'experience', 'education', 'projects', 'achievements', 'contact']
+    const sectionIds = [
+      'skills',
+      'experience',
+      'education',
+      'projects',
+      'achievements',
+      'contact',
+    ]
     const handleScroll = () => {
       const currentY = window.scrollY
       setScrolled(currentY > 50)
@@ -48,15 +53,6 @@ export function Navbar() {
 
   return (
     <>
-      {/* Scroll progress bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] z-[60] origin-left"
-        style={{
-          scaleX: scrollYProgress,
-          background: 'linear-gradient(90deg, #06d6a0, #3b82f6, #7c3aed)',
-        }}
-      />
-
       <motion.nav
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           scrolled

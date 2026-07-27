@@ -18,11 +18,17 @@ export const en = {
     viewWork: 'View My Work',
     getInTouch: 'Get In Touch',
     scroll: 'Scroll',
+    stats: [
+      { label: 'Experience', value: '4+ yrs' },
+      { label: 'Projects', value: '30+' },
+      { label: 'Stack', value: '20+' },
+    ],
   },
   skills: {
     title: 'Skills & Expertise',
     description: 'Technologies I work with daily to build amazing experiences',
     all: 'All',
+    sphereHint: 'Drag the sphere · Tap a tag',
     categories: {
       frontend: 'Frontend',
       backend: 'Backend',
@@ -87,6 +93,8 @@ export const en = {
     idLabel: 'Indonesia',
     enSubtitle: 'Continue in English',
     idSubtitle: 'Lanjutkan dalam Bahasa Indonesia',
+    booting: 'Initialising WebGL runtime',
+    ready: 'Ready',
   },
 }
 

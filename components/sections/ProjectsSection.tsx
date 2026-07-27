@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { TextReveal } from '../interactive/TextReveal'
 import { TiltCard } from '../interactive/TiltCard'
+import { SpotlightCard } from '../interactive/SpotlightCard'
+import { startScroll, stopScroll } from '../interactive/SmoothScroll'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Project {
@@ -31,7 +33,9 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const { t } = useLanguage()
 
-  const allTechs = Array.from(new Set(projects.flatMap((p) => p.technologies || []))).sort()
+  const allTechs = Array.from(
+    new Set(projects.flatMap((p) => p.technologies ?? []).map((tech) => tech.trim()).filter(Boolean))
+  ).sort()
   const filteredProjects = filter ? projects.filter((p) => p.technologies?.includes(filter)) : projects
 
   return (
@@ -149,11 +153,13 @@ function ProjectCard({
       style={{ cursor: 'none' }}
     >
       <TiltCard tiltAmount={5} scale={1.02}>
+        <SpotlightCard color="#06d6a0" radius={420}>
         <div
-          className="glass-card overflow-hidden group h-full cursor-none"
+          className="group relative h-full cursor-none overflow-hidden rounded-[15px]"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           data-hover
+          data-cursor-label={t.projects.viewDetails}
         >
           {/* Image */}
           <div className="relative h-48 sm:h-56 overflow-hidden bg-[rgba(255,255,255,0.02)]">
@@ -182,6 +188,11 @@ function ProjectCard({
 
           {/* Content */}
           <div className="p-5">
+            {project.featured && (
+              <span className="mb-2 inline-block rounded-full border border-[#f97316]/25 bg-[#f97316]/10 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-[#f97316]">
+                {t.projects.featured}
+              </span>
+            )}
             <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
             <p className="text-[rgba(255,255,255,0.4)] text-sm mb-4 line-clamp-2">{description}</p>
             {project.technologies && project.technologies.length > 0 && (
@@ -202,7 +213,15 @@ function ProjectCard({
               </div>
             )}
           </div>
+
+          {/* Light sweep on hover */}
+          <motion.span
+            className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(105deg,transparent_35%,rgba(255,255,255,0.10)_50%,transparent_65%)]"
+            animate={{ x: isHovered ? '100%' : '-100%' }}
+            transition={{ duration: 0.9, ease: 'easeInOut' }}
+          />
         </div>
+        </SpotlightCard>
       </TiltCard>
     </motion.div>
   )
@@ -219,9 +238,16 @@ function ProjectModal({
   const { t, locale } = useLanguage()
 
   useEffect(() => {
-    document.body.style.overflow = project ? 'hidden' : ''
+    if (project) {
+      stopScroll()
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      startScroll()
+    }
     return () => {
       document.body.style.overflow = ''
+      startScroll()
     }
   }, [project])
 

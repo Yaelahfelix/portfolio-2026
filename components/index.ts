@@ -17,3 +17,13 @@ export { ParallaxText } from './interactive/ParallaxText'
 export { TextReveal } from './interactive/TextReveal'
 export { TiltCard } from './interactive/TiltCard'
 export { SectionTransition } from './interactive/SectionTransition'
+export { ScrambleText } from './interactive/ScrambleText'
+export { SpotlightCard } from './interactive/SpotlightCard'
+export { SkillSphere } from './interactive/SkillSphere'
+export { ScrollProgress } from './interactive/ScrollProgress'
+export { SmoothScroll, scrollTo, startScroll, stopScroll } from './interactive/SmoothScroll'
+
+// WebGL
+export { StageCanvas } from './three/StageCanvas'
+export { Effects } from './three/Effects'
+export { BackdropCanvas } from './three/backdrop/BackdropCanvas'
