@@ -84,7 +84,7 @@ export function LiquidScene({ detail, live, wireframe }: SceneProps) {
       </mesh>
 
       <mesh scale={1.5}>
-        <sphereGeometry args={[1, 48, 48]} />
+        <sphereGeometry args={[1, 32, 24]} />
         <shaderMaterial
           uniforms={glowUniforms}
           vertexShader={glowVertex}

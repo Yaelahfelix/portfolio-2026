@@ -90,22 +90,44 @@ interface SceneProps {
   live: LiveRef
 }
 
+type NebulaBuffers = {
+  shapes: Float32Array[]
+  scales: Float32Array
+  randoms: Float32Array
+}
+
+/**
+ * Four full point clouds plus two scalar streams. This scene is mounted by both
+ * the skills and achievements sections and is torn down between them, so the
+ * generators would otherwise run several times per visit — each run is a
+ * blocking loop over `count` that lands as a scroll stutter.
+ */
+const cache = new Map<number, NebulaBuffers>()
+
+function buildNebula(count: number): NebulaBuffers {
+  const hit = cache.get(count)
+  if (hit) return hit
+
+  const shapes = SHAPES.map((shape) => shape.generate(count))
+  const scales = new Float32Array(count)
+  const randoms = new Float32Array(count)
+  for (let i = 0; i < count; i++) {
+    scales[i] = 0.4 + Math.random() * 1.5
+    randoms[i] = Math.random()
+  }
+
+  const built = { shapes, scales, randoms }
+  cache.set(count, built)
+  return built
+}
+
 /** Particle cloud that morphs between sphere, knot, cube and galaxy. */
 export function NebulaScene({ count, live }: SceneProps) {
   const pointsRef = useRef<Points>(null)
   const pointerTarget = useMemo(() => new Vector3(), [])
   const weightTarget = useMemo(() => new Vector4(1, 0, 0, 0), [])
 
-  const attributes = useMemo(() => {
-    const shapes = SHAPES.map((shape) => shape.generate(count))
-    const scales = new Float32Array(count)
-    const randoms = new Float32Array(count)
-    for (let i = 0; i < count; i++) {
-      scales[i] = 0.4 + Math.random() * 1.5
-      randoms[i] = Math.random()
-    }
-    return { shapes, scales, randoms }
-  }, [count])
+  const attributes = useMemo(() => buildNebula(count), [count])
 
   const uniforms = useMemo(
     () => ({
@@ -113,7 +135,8 @@ export function NebulaScene({ count, live }: SceneProps) {
       uSpeed: { value: 1 },
       uIntensity: { value: 0.75 },
       uPulse: { value: 0 },
-      uSize: { value: 22 },
+      // Nudged up to keep the cloud reading as dense with fewer sprites
+      uSize: { value: 26 },
       uHue: { value: 0 },
       uOpacity: { value: 0 },
       uWeights: { value: new Vector4(1, 0, 0, 0) },

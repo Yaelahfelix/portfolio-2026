@@ -82,9 +82,14 @@ interface SceneDirectorProps {
 }
 
 export function SceneDirector({ scene, live, tier, scrollRef, burstRef }: SceneDirectorProps) {
-  const particles = scaleCount(tier, 24000)
-  const detail = tier === 'low' ? 3 : tier === 'mid' ? 4 : 5
-  const segments = tier === 'low' ? 110 : tier === 'mid' ? 170 : 230
+  // These are the three knobs that decide the frame budget. The particle clouds
+  // are additive and full-screen, so their real cost is overdraw, not vertex
+  // count — past ~10k the extra points land on pixels that are already white.
+  const particles = scaleCount(tier, 9000)
+  const detail = tier === 'low' ? 2 : tier === 'mid' ? 3 : 4
+  // The terrain grid *is* the visual, so it keeps more of its density than the
+  // others — its vertex shader got 1.6x cheaper, which pays for the resolution.
+  const segments = tier === 'low' ? 72 : tier === 'mid' ? 112 : 160
 
   return (
     <>
@@ -92,19 +97,37 @@ export function SceneDirector({ scene, live, tier, scrollRef, burstRef }: SceneD
       <Rig scene={scene} scrollRef={scrollRef} />
       <PulseDecay live={live} />
 
+      {/*
+        Every scene stays mounted and is hidden with `visible`, rather than being
+        conditionally rendered.
+
+        Unmounting disposed the geometry and the material, so scrolling back into
+        a section had to re-upload its buffers and, far worse, compile and link
+        its shader program again — a synchronous GPU driver call that lands as a
+        freeze in the middle of a scroll. Hidden objects are skipped when the
+        render list is built, so the only ongoing cost is each scene's `useFrame`
+        doing a handful of lerps.
+      */}
       <group position={SCENE_OFFSETS[scene]} scale={SCENE_SCALES[scene]}>
-        {scene === 'hero' && (
+        <group visible={scene === 'hero'}>
           <HeroScene tier={tier} scrollRef={scrollRef} burstRef={burstRef} live={live} />
-        )}
-        {(scene === 'skills' || scene === 'achievements') && (
+        </group>
+        <group visible={scene === 'skills' || scene === 'achievements'}>
           <NebulaScene count={particles} live={live} />
-        )}
-        {scene === 'experience' && <VortexScene count={particles} live={live} />}
-        {scene === 'education' && <TerrainScene segments={segments} live={live} wireframe />}
-        {scene === 'projects' && <LiquidScene detail={detail} live={live} wireframe={false} />}
+        </group>
+        <group visible={scene === 'experience'}>
+          <VortexScene count={particles} live={live} />
+        </group>
+        <group visible={scene === 'education'}>
+          <TerrainScene segments={segments} live={live} wireframe />
+        </group>
+        <group visible={scene === 'projects'}>
+          <LiquidScene detail={detail} live={live} wireframe={false} />
+        </group>
       </group>
 
-      <Effects tier={tier} intensity={scene === 'hero' ? 1.05 : 0.8} />
+      {/* No per-scene props — see Effects for why they must not change. */}
+      <Effects tier={tier} />
     </>
   )
 }

@@ -83,7 +83,10 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="mb-8 inline-block"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-sm font-medium text-[rgba(255,255,255,0.65)] backdrop-blur-md">
+          {/* No backdrop-filter on anything sitting over the hero canvas — the
+              canvas repaints every frame, so each blurred pane is re-sampled
+              every frame too. Slightly denser fills read the same over black. */}
+          <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)] px-4 py-2 text-sm font-medium text-[rgba(255,255,255,0.65)]">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#06d6a0] opacity-70" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#06d6a0]" />
@@ -163,7 +166,7 @@ export function HeroSection() {
           <MagneticButton
             as="a"
             href="#contact"
-            className="rounded-full border border-white/20 bg-transparent px-8 py-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-[#06d6a0]/60 hover:bg-[#06d6a0]/10"
+            className="rounded-full border border-white/20 bg-white/[0.03] px-8 py-4 text-sm font-semibold text-white transition-all hover:border-[#06d6a0]/60 hover:bg-[#06d6a0]/10"
             strength={0.3}
           >
             {t.hero.getInTouch}
@@ -178,7 +181,7 @@ export function HeroSection() {
           className="mx-auto mt-11 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06]"
         >
           {t.hero.stats.map((stat) => (
-            <div key={stat.label} className="bg-[#08080b]/70 px-4 py-4 backdrop-blur-md">
+            <div key={stat.label} className="bg-[#08080b]/90 px-4 py-4">
               <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/30">
                 {stat.label}
               </dt>

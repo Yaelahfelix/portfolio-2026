@@ -22,8 +22,22 @@ function GradientFallback() {
  * the director swaps what is rendered as they come into view, so every section
  * gets its own living backdrop without paying for a second GL context.
  */
+/**
+ * Grain and vignette used to be two extra full-screen post passes. Static
+ * overlays do not need to be recomputed every frame — the browser rasterises
+ * this once and composites it for free.
+ */
+function Vignette() {
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(0,0,0,0.8)_100%)]"
+      aria-hidden
+    />
+  )
+}
+
 export function BackdropCanvas() {
-  const { ready, tier, skip3D } = useDeviceTier()
+  const { ready, tier, dpr, skip3D } = useDeviceTier()
 
   const live = useRef<SceneLive>({ ...DEFAULT_LIVE, opacity: 0 })
   const scrollRef = useRef(0)
@@ -67,12 +81,24 @@ export function BackdropCanvas() {
     return () => observer.disconnect()
   }, [ready])
 
-  // Hero-only scroll progress, drives the dispersal of the landing scene
+  // Hero-only scroll progress, drives the dispersal of the landing scene.
+  // Lenis fires scroll on every rAF tick; reading `scrollY` there can flush
+  // layout, so coalesce into one read per frame.
   useEffect(() => {
-    const onScroll = () => {
+    let queued = false
+
+    const read = () => {
+      queued = false
       scrollRef.current = Math.min(window.scrollY / Math.max(window.innerHeight, 1), 1.4)
     }
-    onScroll()
+
+    const onScroll = () => {
+      if (queued) return
+      queued = true
+      requestAnimationFrame(read)
+    }
+
+    read()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -110,21 +136,25 @@ export function BackdropCanvas() {
   if (skip3D || failed) return <GradientFallback />
 
   return (
-    <StageCanvas
-      className="pointer-events-none fixed inset-0 -z-10"
-      pauseOffscreen={false}
-      camera={{ position: [0, 0, 6.2], fov: 46, near: 0.1, far: 120 }}
-      onCreated={({ gl }) => {
-        gl.domElement.addEventListener('webglcontextlost', () => setFailed(true), { once: true })
-      }}
-    >
-      <SceneDirector
-        scene={mounted}
-        live={live}
-        tier={tier}
-        scrollRef={scrollRef}
-        burstRef={burstRef}
-      />
-    </StageCanvas>
+    <>
+      <StageCanvas
+        className="pointer-events-none fixed inset-0 -z-10"
+        pauseOffscreen={false}
+        dpr={dpr}
+        camera={{ position: [0, 0, 6.2], fov: 46, near: 0.1, far: 120 }}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener('webglcontextlost', () => setFailed(true), { once: true })
+        }}
+      >
+        <SceneDirector
+          scene={mounted}
+          live={live}
+          tier={tier}
+          scrollRef={scrollRef}
+          burstRef={burstRef}
+        />
+      </StageCanvas>
+      <Vignette />
+    </>
   )
 }

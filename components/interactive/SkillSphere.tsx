@@ -60,6 +60,9 @@ export function SkillSphere({
 
   const points = useMemo(() => fibonacciSphere(items.length), [items.length])
 
+  /** Last values written per node, so unchanged styles are never touched. */
+  const written = useRef<{ z: number; blur: number }[]>([])
+
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -67,8 +70,24 @@ export function SkillSphere({
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const radius = size / 2 - 34
     let frame = 0
+    let onScreen = false
+
+    // This loop used to run for the whole session, including while the reader
+    // was still on the hero several screens above.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(container)
 
     const render = () => {
+      if (!onScreen) {
+        frame = requestAnimationFrame(render)
+        return
+      }
+
       if (!drag.current.active && !paused.current) {
         if (pointer.current.inside) {
           // Cursor position steers the spin like a trackball
@@ -109,8 +128,24 @@ export function SkillSphere({
 
         node.style.transform = `translate(-50%, -50%) translate3d(${x1 * radius}px, ${y2 * radius}px, 0) scale(${scale})`
         node.style.opacity = String(opacity)
-        node.style.zIndex = String(Math.round(depth * 200))
-        node.style.filter = depth < 0.35 ? `blur(${(0.35 - depth) * 4}px)` : 'none'
+
+        // `filter` and `z-index` are the expensive two: a blur gives the element
+        // its own compositing pass, and a stacking change re-sorts the layer
+        // tree. Both are quantised so they are written only when the step they
+        // land in actually changes, instead of on every single frame.
+        const prev = (written.current[i] ??= { z: -1, blur: -1 })
+
+        const z = Math.round(depth * 20)
+        if (z !== prev.z) {
+          node.style.zIndex = String(z * 10)
+          prev.z = z
+        }
+
+        const blur = depth < 0.35 ? Math.round((0.35 - depth) * 8) : 0
+        if (blur !== prev.blur) {
+          node.style.filter = blur ? `blur(${blur / 2}px)` : 'none'
+          prev.blur = blur
+        }
       }
 
       frame = requestAnimationFrame(render)
@@ -119,13 +154,17 @@ export function SkillSphere({
     if (reduced) {
       // One static layout, no animation loop
       velocity.current = { x: 0, y: 0 }
+      onScreen = true
       render()
       cancelAnimationFrame(frame)
     } else {
       frame = requestAnimationFrame(render)
     }
 
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      observer.disconnect()
+      cancelAnimationFrame(frame)
+    }
   }, [points, size])
 
   const handlePointerMove = useCallback((event: React.PointerEvent) => {

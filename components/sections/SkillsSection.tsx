@@ -244,7 +244,7 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
                   key={selected._id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4 backdrop-blur-sm"
+                  className="rounded-2xl border border-white/[0.07] bg-white/[0.04] px-5 py-4"
                 >
                   <p className="text-sm font-semibold text-white">{selected.name}</p>
                   <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-white/35">

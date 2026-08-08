@@ -84,29 +84,48 @@ interface SceneProps {
   live: LiveRef
 }
 
+type DiscBuffers = {
+  positions: Float32Array
+  radius: Float32Array
+  angle: Float32Array
+  height: Float32Array
+  rate: Float32Array
+  scale: Float32Array
+}
+
+/** Survives unmount so scrolling past the experience section twice is free. */
+const cache = new Map<number, DiscBuffers>()
+
+function buildDisc(count: number): DiscBuffers {
+  const hit = cache.get(count)
+  if (hit) return hit
+
+  const positions = new Float32Array(count * 3)
+  const radius = new Float32Array(count)
+  const angle = new Float32Array(count)
+  const height = new Float32Array(count)
+  const rate = new Float32Array(count)
+  const scale = new Float32Array(count)
+
+  for (let i = 0; i < count; i++) {
+    radius[i] = 0.35 + Math.pow(Math.random(), 0.55) * 3.1
+    angle[i] = Math.random() * Math.PI * 2
+    height[i] = (Math.random() - 0.5) * Math.exp(-radius[i] * 0.55) * 2.6
+    rate[i] = Math.random()
+    scale[i] = 0.35 + Math.random() * 1.4
+  }
+
+  const built = { positions, radius, angle, height, rate, scale }
+  cache.set(count, built)
+  return built
+}
+
 /** Accretion disc: particles spiral inward and bend around the pointer. */
 export function VortexScene({ count, live }: SceneProps) {
   const pointsRef = useRef<Points>(null)
   const pointerTarget = useMemo(() => new Vector3(), [])
 
-  const attributes = useMemo(() => {
-    const positions = new Float32Array(count * 3)
-    const radius = new Float32Array(count)
-    const angle = new Float32Array(count)
-    const height = new Float32Array(count)
-    const rate = new Float32Array(count)
-    const scale = new Float32Array(count)
-
-    for (let i = 0; i < count; i++) {
-      radius[i] = 0.35 + Math.pow(Math.random(), 0.55) * 3.1
-      angle[i] = Math.random() * Math.PI * 2
-      height[i] = (Math.random() - 0.5) * Math.exp(-radius[i] * 0.55) * 2.6
-      rate[i] = Math.random()
-      scale[i] = 0.35 + Math.random() * 1.4
-    }
-
-    return { positions, radius, angle, height, rate, scale }
-  }, [count])
+  const attributes = useMemo(() => buildDisc(count), [count])
 
   const uniforms = useMemo(
     () => ({
@@ -114,7 +133,8 @@ export function VortexScene({ count, live }: SceneProps) {
       uSpeed: { value: 1 },
       uIntensity: { value: 0.75 },
       uPulse: { value: 0 },
-      uSize: { value: 18 },
+      // Nudged up to keep the disc reading as dense with fewer sprites
+      uSize: { value: 22 },
       uHue: { value: 0 },
       uOpacity: { value: 0 },
       uPointer: { value: new Vector3(99, 99, 99) },
@@ -183,11 +203,11 @@ export function VortexScene({ count, live }: SceneProps) {
 
       {/* Event horizon */}
       <mesh>
-        <sphereGeometry args={[0.34, 32, 32]} />
+        <sphereGeometry args={[0.34, 24, 16]} />
         <meshBasicMaterial color="#000000" />
       </mesh>
       <mesh scale={1.9}>
-        <sphereGeometry args={[0.34, 32, 32]} />
+        <sphereGeometry args={[0.34, 24, 16]} />
         <shaderMaterial
           uniforms={glowUniforms}
           transparent

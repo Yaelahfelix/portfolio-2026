@@ -24,13 +24,17 @@ export function Navbar() {
       'achievements',
       'contact',
     ]
-    const handleScroll = () => {
+    const ordered = [...sectionIds].reverse()
+    let queued = false
+
+    const measure = () => {
+      queued = false
       const currentY = window.scrollY
       setScrolled(currentY > 50)
       setHidden(currentY > lastScrollY.current && currentY > 200)
       lastScrollY.current = currentY
 
-      for (const section of [...sectionIds].reverse()) {
+      for (const section of ordered) {
         const el = document.getElementById(section)
         if (el && el.getBoundingClientRect().top <= 200) {
           setActiveSection(section)
@@ -39,6 +43,16 @@ export function Navbar() {
       }
     }
 
+    // Lenis emits scroll on every animation frame, and this handler calls
+    // getBoundingClientRect on up to six elements — running it per event means
+    // several forced layouts per frame. Coalesce to one measurement per frame.
+    const handleScroll = () => {
+      if (queued) return
+      queued = true
+      requestAnimationFrame(measure)
+    }
+
+    measure()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -56,7 +70,10 @@ export function Navbar() {
       <motion.nav
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           scrolled
-            ? 'bg-[rgba(5,5,5,0.8)] backdrop-blur-xl border-b border-[rgba(255,255,255,0.05)]'
+            // Opaque instead of blurred: this bar is fixed over a canvas that
+            // repaints every frame, so a backdrop-filter here would re-blur a
+            // full-width strip 60 times a second for a barely visible effect.
+            ? 'bg-[rgba(5,5,5,0.92)] border-b border-[rgba(255,255,255,0.05)]'
             : 'bg-transparent'
         }`}
         animate={{ y: hidden ? -100 : 0 }}

@@ -104,7 +104,10 @@ export function GlowCursor() {
         style={{ x: ringX, y: ringY, translateX: '-50%', translateY: '-50%' }}
       >
         <motion.div
-          className="flex items-center justify-center rounded-full border backdrop-blur-[1px]"
+          // No backdrop-filter here: a 1px blur is invisible, but it forces the
+          // compositor to re-sample the region behind the ring on every frame of
+          // a spring that follows the cursor.
+          className="flex items-center justify-center rounded-full border"
           animate={{
             width: ringSize,
             height: ringSize,
@@ -132,7 +135,11 @@ export function GlowCursor() {
 
       {/* Hard dot */}
       <motion.div
-        className="pointer-events-none fixed left-0 top-0 z-[9999] mix-blend-difference"
+        // No mix-blend-mode: a blended element forces the compositor to read
+        // back everything painted beneath it, and what is beneath it here is a
+        // full-screen canvas that repaints every frame. The page is near-black,
+        // so a plain white dot reads the same.
+        className="pointer-events-none fixed left-0 top-0 z-[9999]"
         style={{ x: dotX, y: dotY, translateX: '-50%', translateY: '-50%' }}
       >
         <motion.div

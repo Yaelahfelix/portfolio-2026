@@ -26,7 +26,10 @@ export function LiquidCore({ tier, scrollRef, burstRef, live }: LiquidCoreProps)
   const cageMaterialRef = useRef<MeshBasicMaterial>(null)
   const pointer = useMemo(() => new Vector3(0, 0, 1), [])
 
-  const detail = tier === 'low' ? 3 : tier === 'mid' ? 4 : 5
+  // Each subdivision quadruples the vertex count, and the liquid vertex shader
+  // runs nine simplex-noise evaluations per vertex. Detail 4 is 2.5k vertices;
+  // detail 5 was 10k, and the silhouette difference is not visible at this size.
+  const detail = tier === 'low' ? 2 : tier === 'mid' ? 3 : 4
 
   const coreUniforms = useMemo(
     () => ({
@@ -98,9 +101,9 @@ export function LiquidCore({ tier, scrollRef, burstRef, live }: LiquidCoreProps)
         />
       </mesh>
 
-      {/* Atmosphere shell */}
+      {/* Atmosphere shell — a smooth gradient, so it needs no tessellation */}
       <mesh scale={1.55}>
-        <sphereGeometry args={[1, 48, 48]} />
+        <sphereGeometry args={[1, 32, 24]} />
         <shaderMaterial
           uniforms={glowUniforms}
           vertexShader={glowVertex}

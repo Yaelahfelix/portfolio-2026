@@ -94,39 +94,62 @@ interface ParticleFieldProps {
   live: LiveRef
 }
 
+type FieldBuffers = {
+  positions: Float32Array
+  scales: Float32Array
+  randoms: Float32Array
+}
+
+/**
+ * Buffers survive unmount. The backdrop tears this scene down every time the
+ * reader scrolls away from the hero and rebuilds it when they come back, and
+ * filling ~110k floats is a blocking main-thread loop we should only pay once.
+ */
+const cache = new Map<number, FieldBuffers>()
+
+function buildField(count: number): FieldBuffers {
+  const hit = cache.get(count)
+  if (hit) return hit
+
+  const positions = new Float32Array(count * 3)
+  const scales = new Float32Array(count)
+  const randoms = new Float32Array(count)
+
+  for (let i = 0; i < count; i++) {
+    // Bias toward the shell so the middle stays readable behind the headline
+    const radius = 1.45 + Math.pow(Math.random(), 0.65) * 2.75
+    const theta = Math.random() * Math.PI * 2
+    const phi = Math.acos(2 * Math.random() - 1)
+
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta)
+    positions[i * 3 + 1] = radius * Math.cos(phi) * 0.74
+    positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta)
+
+    scales[i] = 0.35 + Math.random() * 1.5
+    randoms[i] = Math.random()
+  }
+
+  const built = { positions, scales, randoms }
+  cache.set(count, built)
+  return built
+}
+
 export function ParticleField({ tier, scrollRef, burstRef, live }: ParticleFieldProps) {
   const pointsRef = useRef<Points>(null)
   const materialRef = useRef<ShaderMaterial>(null)
   const target = useMemo(() => new Vector3(), [])
 
-  const count = scaleCount(tier, 26000)
+  // Additive full-screen points: the cost is overdraw, not vertices. Ten
+  // thousand sprites already cover the frame — 26k just stacked alpha on alpha.
+  const count = scaleCount(tier, 10000)
 
-  const geometry = useMemo(() => {
-    const positions = new Float32Array(count * 3)
-    const scales = new Float32Array(count)
-    const randoms = new Float32Array(count)
-
-    for (let i = 0; i < count; i++) {
-      // Bias toward the shell so the middle stays readable behind the headline
-      const radius = 1.45 + Math.pow(Math.random(), 0.65) * 2.75
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.acos(2 * Math.random() - 1)
-
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta)
-      positions[i * 3 + 1] = radius * Math.cos(phi) * 0.74
-      positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta)
-
-      scales[i] = 0.35 + Math.random() * 1.5
-      randoms[i] = Math.random()
-    }
-
-    return { positions, scales, randoms }
-  }, [count])
+  const geometry = useMemo(() => buildField(count), [count])
 
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uSize: { value: 20 },
+      // Nudged up from 20 to keep the cloud reading as dense with fewer sprites
+      uSize: { value: 23 },
       uAmp: { value: 0.34 },
       uScroll: { value: 0 },
       uBurst: { value: 0 },

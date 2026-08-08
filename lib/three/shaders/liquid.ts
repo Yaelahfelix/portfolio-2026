@@ -28,9 +28,11 @@ float shape(vec3 p) {
   return n;
 }
 
-vec3 displace(vec3 p) {
+// n is handed back so the caller can reuse the centre sample instead of
+// re-running shape() — three snoise evaluations per vertex are not free.
+vec3 displace(vec3 p, out float n) {
   vec3 dir = normalize(p);
-  float n = shape(p);
+  n = shape(p);
   float pointerDist = distance(dir, normalize(uPointer));
   float bulge = smoothstep(1.1, 0.0, pointerDist) * 0.4;
   return p + dir * (n * uDistort + bulge + uPulse);
@@ -45,14 +47,16 @@ void main() {
   vec3 bitangent = normalize(cross(n0, tangent));
 
   float eps = 0.04;
-  vec3 p0 = displace(position);
-  vec3 p1 = displace(position + tangent * eps);
-  vec3 p2 = displace(position + bitangent * eps);
+  float centreNoise;
+  float scratch;
+  vec3 p0 = displace(position, centreNoise);
+  vec3 p1 = displace(position + tangent * eps, scratch);
+  vec3 p2 = displace(position + bitangent * eps, scratch);
 
   vec3 newNormal = normalize(cross(p1 - p0, p2 - p0));
   if (dot(newNormal, n0) < 0.0) newNormal = -newNormal;
 
-  vNoise = shape(position);
+  vNoise = centreNoise;
   vNormalW = normalize(mat3(modelMatrix) * newNormal);
 
   vec4 world = modelMatrix * vec4(p0, 1.0);

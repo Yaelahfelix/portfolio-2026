@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import dynamic from 'next/dynamic'
 import { Navbar } from './Navbar'
 import { Footer } from './Footer'
 import { HeroSection } from './sections/HeroSection'
@@ -14,9 +15,20 @@ import { ParallaxText } from './interactive/ParallaxText'
 import { SectionTransition } from './interactive/SectionTransition'
 import { SmoothScroll } from './interactive/SmoothScroll'
 import { ScrollProgress } from './interactive/ScrollProgress'
-import { BackdropCanvas } from './three/backdrop/BackdropCanvas'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { SceneKey } from './three/scenes/types'
+
+/**
+ * three + @react-three/fiber + drei + postprocessing is by far the largest
+ * dependency on the page. Statically imported it lands in the same bundle as the
+ * copy and has to be parsed and executed before the page can hydrate, which is
+ * time the reader spends looking at unresponsive text. Split out, the content
+ * hydrates on its own and the backdrop fades in behind it a moment later.
+ */
+const BackdropCanvas = dynamic(
+  () => import('./three/backdrop/BackdropCanvas').then((m) => m.BackdropCanvas),
+  { ssr: false }
+)
 
 interface Skill {
   _id: string

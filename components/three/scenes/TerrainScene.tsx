@@ -26,8 +26,11 @@ void main() {
 
   // Terrain scrolls toward the camera so it reads as flying over a landscape
   float drift = uTime * uSpeed * 0.42;
+  // fbm is four simplex evaluations. The second layer only adds fine grain on
+  // top of the silhouette, so one octave carries it — this shader runs on every
+  // vertex of a 128x128 grid, every frame.
   float h = fbm(vec3(p.x * 0.17, p.y * 0.17 + drift, 0.0));
-  h += fbm(vec3(p.x * 0.55, p.y * 0.55 + drift * 1.6, 3.0)) * 0.35;
+  h += snoise(vec3(p.x * 0.55, p.y * 0.55 + drift * 1.6, 3.0)) * 0.22;
 
   // Pointer lifts a bump under the cursor
   float pointerDist = distance(vec2(p.x, p.y), vec2(uPointer.x, -uPointer.z));

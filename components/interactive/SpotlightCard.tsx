@@ -62,7 +62,10 @@ export function SpotlightCard({
       />
 
       {/* Card surface */}
-      <div className="relative h-full rounded-[15px] bg-[#0a0a0c]/90 backdrop-blur-xl">
+      {/* Surface is already 95% opaque, so a 24px backdrop blur was buying a few
+          percent of colour while forcing a compositor re-blur per card on every
+          frame the backdrop canvas paints. */}
+      <div className="relative h-full rounded-[15px] bg-[#0a0a0c]/95">
         {/* Inner bloom */}
         <div
           className="pointer-events-none absolute inset-0 rounded-[15px] transition-opacity duration-300"
